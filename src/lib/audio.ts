@@ -6,7 +6,7 @@ class AudioManager {
 
   async init(): Promise<void> {
     if (this.isInitialized) return;
-    
+
     try {
       this.audioContext = new AudioContext();
       if (this.audioContext.state === 'suspended') {
@@ -95,63 +95,63 @@ class AudioManager {
     if (!ctx) return;
 
     const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5
-    
+
     frequencies.forEach((freq, i) => {
       const oscillator = ctx.createOscillator();
       const gainNode = ctx.createGain();
-      
+
       oscillator.connect(gainNode);
       gainNode.connect(ctx.destination);
-      
+
       oscillator.type = 'sine';
       oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
-      
+
       const startTime = ctx.currentTime + i * 0.1;
       gainNode.gain.setValueAtTime(0, startTime);
       gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.05);
       gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
-      
+
       oscillator.start(startTime);
       oscillator.stop(startTime + 0.3);
     });
   }
 
   async startBackgroundMusic(volume: number = 50): Promise<void> {
-    const ctx = await this.ensureContext();
-    if (!ctx) return;
+    const ctx = await this.ensureContext()
+    if (!ctx) return
 
-    this.stopBackgroundMusic();
+    this.stopBackgroundMusic()
 
-    const bufferSize = 2 * ctx.sampleRate;
-    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const output = noiseBuffer.getChannelData(0);
+    const bufferSize = 2 * ctx.sampleRate
+    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
+    const output = noiseBuffer.getChannelData(0)
 
     // Generate brown noise (softer, more natural)
-    let lastOut = 0;
+    let lastOut = 0
     for (let i = 0; i < bufferSize; i++) {
-      const white = Math.random() * 2 - 1;
-      output[i] = (lastOut + 0.02 * white) / 1.02;
-      lastOut = output[i];
-      output[i] *= 3.5;
+      const white = Math.random() * 2 - 1
+      output[i] = (lastOut + 0.02 * white) / 1.02
+      lastOut = output[i]
+      output[i] *= 3.5
     }
 
-    this.backgroundNode = ctx.createBufferSource();
-    this.backgroundNode.buffer = noiseBuffer;
-    this.backgroundNode.loop = true;
+    this.backgroundNode = ctx.createBufferSource()
+    this.backgroundNode.buffer = noiseBuffer
+    this.backgroundNode.loop = true
 
-    this.backgroundGain = ctx.createGain();
-    this.backgroundGain.gain.value = (volume / 100) * 0.3;
+    this.backgroundGain = ctx.createGain()
+    this.backgroundGain.gain.value = (volume / 100) * 0.3
 
     // Add a low-pass filter for softer sound
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = 400;
 
-    this.backgroundNode.connect(filter);
-    filter.connect(this.backgroundGain);
-    this.backgroundGain.connect(ctx.destination);
+    this.backgroundNode.connect(filter)
+    filter.connect(this.backgroundGain)
+    this.backgroundGain.connect(ctx.destination)
 
-    this.backgroundNode.start();
+    this.backgroundNode.start()
   }
 
   setBackgroundVolume(volume: number): void {
