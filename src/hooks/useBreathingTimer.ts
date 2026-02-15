@@ -43,7 +43,7 @@ export function useBreathingTimer() {
       if (next.phase === 'inhale' && currentState.phase === 'exhale') {
         breathingStore.setCurrentCycle(currentState.currentCycle + 1);
         if (currentState.settings.soundEnabled) {
-          await audioManager.playCycleComplete();
+          // await audioManager.playCycleComplete();
         }
       }
 
