@@ -15,7 +15,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
 
   const handleSettingChange = (key: keyof BreathingSettings, value: number | boolean) => {
     breathingStore.updateSettings({ [key]: value });
-    
+
     if (key === 'backgroundMusicVolume') {
       audioManager.setBackgroundVolume(value as number);
     }
@@ -25,7 +25,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
-      <div 
+      <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
@@ -43,7 +43,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               <Clock className="w-4 h-4" />
               <span className="text-sm font-medium">Breathing Duration</span>
             </div>
-            
+
             <div className="space-y-4 pl-6">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
@@ -102,7 +102,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               <Slider
                 value={[settings.totalCycles]}
                 onValueChange={([val]) => handleSettingChange('totalCycles', val)}
-                min={1}
+                min={0}
                 max={20}
                 step={1}
               />

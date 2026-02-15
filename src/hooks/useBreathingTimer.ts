@@ -15,7 +15,7 @@ export function useBreathingTimer() {
       case 'hold':
         return { phase: 'exhale', duration: settings.exhaleSeconds };
       case 'exhale':
-        if (currentCycle >= settings.totalCycles) {
+        if (settings.totalCycles >0 && currentCycle >= settings.totalCycles) {
           return null;
         }
         return { phase: 'inhale', duration: settings.inhaleSeconds };
