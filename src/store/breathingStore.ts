@@ -13,13 +13,61 @@ export interface BreathingPattern {
 }
 
 export const builtInPatterns: BreathingPattern[] = [
-  { id: '4-7-8', name: '4-7-8 Relaxing', inhaleSeconds: 4, holdSeconds: 7, exhaleSeconds: 8, holdAfterExhaleSeconds: 0, isBuiltIn: true },
-  { id: '4-0-4-0', name: '4-0-4-0 Simple', inhaleSeconds: 4, holdSeconds: 0, exhaleSeconds: 4, holdAfterExhaleSeconds: 0, isBuiltIn: true },
-  { id: '4-4-4-4', name: '4-4-4-4 Box', inhaleSeconds: 4, holdSeconds: 4, exhaleSeconds: 4, holdAfterExhaleSeconds: 4, isBuiltIn: true },
-  { id: '4-0-8-0', name: '4-0-8-0 Calming', inhaleSeconds: 4, holdSeconds: 0, exhaleSeconds: 8, holdAfterExhaleSeconds: 0, isBuiltIn: true },
-  { id: '5-5-5-5', name: '5-5-5-5 Balanced', inhaleSeconds: 5, holdSeconds: 5, exhaleSeconds: 5, holdAfterExhaleSeconds: 5, isBuiltIn: true },
-  { id: '6-0-6-0', name: '6-0-6-0 Easy', inhaleSeconds: 6, holdSeconds: 0, exhaleSeconds: 6, holdAfterExhaleSeconds: 0, isBuiltIn: true },
-];
+  {
+    id: '4-7-8',
+    name: '4-7-8 Relaxing',
+    inhaleSeconds: 4,
+    holdSeconds: 7,
+    exhaleSeconds: 8,
+    holdAfterExhaleSeconds: 0,
+    isBuiltIn: true,
+  },
+  {
+    id: '4-0-4-0',
+    name: '4-0-4-0 Simple',
+    inhaleSeconds: 4,
+    holdSeconds: 0,
+    exhaleSeconds: 4,
+    holdAfterExhaleSeconds: 0,
+    isBuiltIn: true,
+  },
+  {
+    id: '4-4-4-4',
+    name: '4-4-4-4 Box',
+    inhaleSeconds: 4,
+    holdSeconds: 4,
+    exhaleSeconds: 4,
+    holdAfterExhaleSeconds: 4,
+    isBuiltIn: true,
+  },
+  {
+    id: '4-0-8-0',
+    name: '4-0-8-0 Calming',
+    inhaleSeconds: 4,
+    holdSeconds: 0,
+    exhaleSeconds: 8,
+    holdAfterExhaleSeconds: 0,
+    isBuiltIn: true,
+  },
+  {
+    id: '5-0-5-0',
+    name: '5-0-5-0 Resonance',
+    inhaleSeconds: 5,
+    holdSeconds: 0,
+    exhaleSeconds: 5,
+    holdAfterExhaleSeconds: 0,
+    isBuiltIn: true,
+  },
+  {
+    id: '6-0-6-0',
+    name: '6-0-6-0 Easy',
+    inhaleSeconds: 6,
+    holdSeconds: 0,
+    exhaleSeconds: 6,
+    holdAfterExhaleSeconds: 0,
+    isBuiltIn: true,
+  },
+]
 
 export type BackgroundMusicType = 'whiteNoise' | 'ocean' | 'wind' | 'rain' | 'fire' | 'windLight' | 'sea' | 'custom';
 export type SoundType = 'beep' | 'noise';
