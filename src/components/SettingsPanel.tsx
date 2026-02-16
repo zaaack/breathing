@@ -264,6 +264,32 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               />
             </div>
 
+            {/* Sound Type Selector */}
+            {settings.soundEnabled && (
+              <div className="flex gap-2 pl-6 animate-in fade-in duration-200">
+                <button
+                  onClick={() => handleSettingChange('soundType', 'beep')}
+                  className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all ${
+                    settings.soundType === 'beep'
+                      ? 'bg-primary/20 text-primary border border-primary/50'
+                      : 'bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent'
+                  }`}
+                >
+                  🔔 Beep
+                </button>
+                <button
+                  onClick={() => handleSettingChange('soundType', 'noise')}
+                  className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all ${
+                    settings.soundType === 'noise'
+                      ? 'bg-primary/20 text-primary border border-primary/50'
+                      : 'bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent'
+                  }`}
+                >
+                  🌬️ Noise
+                </button>
+              </div>
+            )}
+
             {/* Background Music Toggle */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-text-secondary">

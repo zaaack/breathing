@@ -88,9 +88,7 @@ export function useBreathingTimer() {
             next.duration,
           )
         } else if (next.phase === 'holdAfterExhale') {
-          await audioManager.playHoldAfterExhaleTone(
-            next.duration,
-          )
+          await audioManager.playHoldTone(next.duration)
         }
       }
     } else {
