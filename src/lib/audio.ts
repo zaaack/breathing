@@ -67,7 +67,7 @@ class AudioManager {
     oscillator.type = 'sine';
     oscillator.frequency.setValueAtTime(440, ctx.currentTime);
 
-    gainNode.gain.setValueAtTime(0.7, ctx.currentTime);
+    gainNode.gain.setValueAtTime(1, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
 
     oscillator.start(ctx.currentTime);
@@ -88,7 +88,7 @@ class AudioManager {
     oscillator.frequency.setValueAtTime(440, ctx.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 0.5);
 
-    gainNode.gain.setValueAtTime(0.7, ctx.currentTime);
+    gainNode.gain.setValueAtTime(1, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
 
     oscillator.start(ctx.currentTime);
@@ -108,7 +108,7 @@ class AudioManager {
     oscillator.type = 'sine';
     oscillator.frequency.setValueAtTime(330, ctx.currentTime);
 
-    gainNode.gain.setValueAtTime(0.7, ctx.currentTime);
+    gainNode.gain.setValueAtTime(1, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
 
     oscillator.start(ctx.currentTime);
