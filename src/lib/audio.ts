@@ -1,364 +1,487 @@
-import { type BackgroundMusicType } from '@/store/breathingStore';
+import { type BackgroundMusicType } from '@/store/breathingStore'
 
 class AudioManager {
-  private audioContext: AudioContext | null = null;
-  private backgroundNode: AudioBufferSourceNode | null = null;
-  private backgroundGain: GainNode | null = null;
-  private backgroundFilter: BiquadFilterNode | null = null;
-  private lfoNode: OscillatorNode | null = null;
-  private customAudioElement: HTMLAudioElement | null = null;
-  private isInitialized = false;
+  private audioContext: AudioContext | null = null
+  private backgroundNode: AudioBufferSourceNode | null = null
+  private backgroundGain: GainNode | null = null
+  private backgroundFilter: BiquadFilterNode | null = null
+  private lfoNode: OscillatorNode | null = null
+  private customAudioElement: HTMLAudioElement | null = null
+  private isInitialized = false
 
   async init(): Promise<void> {
-    if (this.isInitialized) return;
+    if (this.isInitialized) return
 
     try {
-      this.audioContext = new AudioContext();
+      this.audioContext = new AudioContext()
       if (this.audioContext.state === 'suspended') {
-        await this.audioContext.resume();
+        await this.audioContext.resume()
       }
-      this.isInitialized = true;
+      this.isInitialized = true
     } catch (error) {
-      console.error('Failed to initialize audio:', error);
+      console.error('Failed to initialize audio:', error)
     }
   }
 
   async ensureContext(): Promise<AudioContext | null> {
     if (!this.audioContext) {
-      await this.init();
+      await this.init()
     }
     if (this.audioContext?.state === 'suspended') {
-      await this.audioContext.resume();
+      await this.audioContext.resume()
     }
-    return this.audioContext;
+    return this.audioContext
   }
 
-  async playInhaleTone(): Promise<void> {
-    const ctx = await this.ensureContext();
-    if (!ctx) return;
+  toneVolume = 0.5
 
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
+  async playInhaleTone(
+    duration: number,
+    backgroundMusicEnabled: boolean
+  ): Promise<void> {
+    if (backgroundMusicEnabled) {
+      return this.beep(440, )
+    }
+    const ctx = await this.ensureContext()
+    if (!ctx) return
 
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    // 使用粉红噪声模拟气流
+    const noiseBuffer = this.createBrownNoiseBuffer(ctx)
+    const source = ctx.createBufferSource()
+    source.buffer = noiseBuffer
+    source.loop = true // 确保时间长于缓冲时可以循环
 
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(220, ctx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.5);
+    const filter = ctx.createBiquadFilter()
+    // filter.type = 'bandpass'
+    // filter.Q.value = 1.2 // 适度的共鸣感，听起来更像喉咙发出的气流声
+    filter.type = 'lowpass'
+    filter.frequency.value = 150
 
-    gainNode.gain.setValueAtTime(1, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    const gainNode = ctx.createGain()
 
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.5);
+    source.connect(filter)
+    filter.connect(gainNode)
+    gainNode.connect(ctx.destination)
+
+    const now = ctx.currentTime
+
+    // 吸气包络：频率从低到高，模拟气流加速；音量渐强再微弱收尾
+    filter.frequency.setValueAtTime(300, now)
+    filter.frequency.linearRampToValueAtTime(1200, now + duration)
+
+    gainNode.gain.setValueAtTime(0.001, now)
+    gainNode.gain.linearRampToValueAtTime(
+      this.toneVolume * 0.6,
+      now + duration * 0.8
+    )
+    gainNode.gain.linearRampToValueAtTime(0.001, now + duration)
+
+    source.start(now)
+    source.stop(now + duration)
   }
 
-  async playHoldTone(): Promise<void> {
-    const ctx = await this.ensureContext();
-    if (!ctx) return;
+  async beep(frequency: number, duration = 1000) {
+    const audioCtx = await this.ensureContext()
+    if (!audioCtx) return
+    const oscillator = audioCtx.createOscillator()
+    const gainNode = audioCtx.createGain()
 
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
+    oscillator.connect(gainNode)
+    gainNode.connect(audioCtx.destination)
 
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    oscillator.frequency.value = frequency
+    oscillator.type = 'sine' // 正弦波比较柔和
 
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(440, ctx.currentTime);
+    oscillator.start()
+    // 渐弱效果，防止爆音
+    gainNode.gain.linearRampToValueAtTime(
+      0.0001,
+      audioCtx.currentTime + duration / 1000
+    )
 
-    gainNode.gain.setValueAtTime(1, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.2);
+    setTimeout(() => {
+      oscillator.stop()
+    }, duration)
   }
 
-  async playExhaleTone(): Promise<void> {
-    const ctx = await this.ensureContext();
-    if (!ctx) return;
+  // 调用示例
+  // beep(440, 2000); // 播放 440Hz 的声音 2 秒
+  async playExhaleTone(
+    duration: number,
+    backgroundMusicEnabled: boolean
+  ): Promise<void> {
+    if (backgroundMusicEnabled) {
+      return this.beep(330, )
+    }
+    const ctx = await this.ensureContext()
+    if (!ctx) return
 
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
+    const noiseBuffer = this.createBrownNoiseBuffer(ctx)
+    const source = ctx.createBufferSource()
+    source.buffer = noiseBuffer
+    source.loop = true
 
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    const filter = ctx.createBiquadFilter()
+    // filter.type = 'bandpass'
+    // filter.Q.value = 1.0
+    filter.type = 'lowpass'
+    filter.frequency.value = 150
 
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(440, ctx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 0.5);
+    const gainNode = ctx.createGain()
 
-    gainNode.gain.setValueAtTime(1, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    source.connect(filter)
+    filter.connect(gainNode)
+    gainNode.connect(ctx.destination)
 
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.5);
+    const now = ctx.currentTime
+
+    // 呼气包络：频率从高回落；一开始气流较大，随后慢慢叹出消失
+    filter.frequency.setValueAtTime(1200, now)
+    filter.frequency.exponentialRampToValueAtTime(250, now + duration)
+
+    gainNode.gain.setValueAtTime(0.001, now)
+    gainNode.gain.linearRampToValueAtTime(
+      this.toneVolume * 0.6,
+      now + duration * 0.1
+    ) // 快速达到最大呼气声
+    gainNode.gain.linearRampToValueAtTime(0.001, now + duration) // 缓缓减弱
+
+    source.start(now)
+    source.stop(now + duration)
   }
 
-  async playHoldAfterExhaleTone(): Promise<void> {
-    const ctx = await this.ensureContext();
-    if (!ctx) return;
+  async playHoldTone(
+    duration: number,
+    backgroundMusicEnabled: boolean
+  ): Promise<void> {
+    if (backgroundMusicEnabled) {
+      return this.beep(380, 2000)
+    }
+    const ctx = await this.ensureContext()
+    if (!ctx) return
 
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
+    // 屏息时用一个极其微弱的正弦波模拟体内的“静谧感”或心跳背景音
+    const oscillator = ctx.createOscillator()
+    const gainNode = ctx.createGain()
 
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    oscillator.connect(gainNode)
+    gainNode.connect(ctx.destination)
 
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(330, ctx.currentTime);
+    oscillator.type = 'sine'
+    oscillator.frequency.setValueAtTime(100, ctx.currentTime) // 很低的沉浸音
 
-    gainNode.gain.setValueAtTime(1, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+    const now = ctx.currentTime
 
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.2);
+    gainNode.gain.setValueAtTime(0.001, now)
+    gainNode.gain.linearRampToValueAtTime(this.toneVolume * 0.05, now + 0.5) // 音量极低 (0.05)
+    gainNode.gain.linearRampToValueAtTime(0.001, now + duration)
+
+    oscillator.start(now)
+    oscillator.stop(now + duration)
+  }
+
+  async playHoldAfterExhaleTone(
+    duration: number,
+    backgroundMusicEnabled: boolean
+  ): Promise<void> {
+    if (backgroundMusicEnabled) {
+      return this.beep(380)
+    }
+    // 呼气后的屏息，可以使用和吸气后屏息相同的逻辑，也可以稍微改变频率以示区分
+    const ctx = await this.ensureContext()
+    if (!ctx) return
+
+    const oscillator = ctx.createOscillator()
+    const gainNode = ctx.createGain()
+
+    oscillator.connect(gainNode)
+    gainNode.connect(ctx.destination)
+
+    oscillator.type = 'sine'
+    oscillator.frequency.setValueAtTime(80, ctx.currentTime) // 更低沉一点
+
+    const now = ctx.currentTime
+
+    gainNode.gain.setValueAtTime(0.001, now)
+    gainNode.gain.linearRampToValueAtTime(this.toneVolume * 0.03, now + 0.5)
+    gainNode.gain.linearRampToValueAtTime(0.001, now + duration)
+
+    oscillator.start(now)
+    oscillator.stop(now + duration)
   }
 
   async playCycleComplete(): Promise<void> {
-    const ctx = await this.ensureContext();
-    if (!ctx) return;
+    const ctx = await this.ensureContext()
+    if (!ctx) return
 
-    const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5
+    const frequencies = [523.25, 659.25, 783.99] // C5, E5, G5
 
     frequencies.forEach((freq, i) => {
-      const oscillator = ctx.createOscillator();
-      const gainNode = ctx.createGain();
+      const oscillator = ctx.createOscillator()
+      const gainNode = ctx.createGain()
 
-      oscillator.connect(gainNode);
-      gainNode.connect(ctx.destination);
+      oscillator.connect(gainNode)
+      gainNode.connect(ctx.destination)
 
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
+      oscillator.type = 'sine'
+      oscillator.frequency.setValueAtTime(freq, ctx.currentTime)
 
-      const startTime = ctx.currentTime + i * 0.1;
-      gainNode.gain.setValueAtTime(0, startTime);
-      gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.05);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+      const startTime = ctx.currentTime + i * 0.1
+      gainNode.gain.setValueAtTime(0, startTime)
+      gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.05)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3)
 
-      oscillator.start(startTime);
-      oscillator.stop(startTime + 0.3);
-    });
+      oscillator.start(startTime)
+      oscillator.stop(startTime + 0.3)
+    })
   }
 
-  async startBackgroundMusic(volume: number = 50, musicType: BackgroundMusicType = 'ocean', customMusicUrl?: string | null): Promise<void> {
+  async startBackgroundMusic(
+    volume: number = 50,
+    musicType: BackgroundMusicType = 'ocean',
+    customMusicUrl?: string | null
+  ): Promise<void> {
     if (musicType === 'custom' && customMusicUrl) {
       // Custom MP3 file
-      const ctx = await this.ensureContext();
-      if (!ctx) return;
+      const ctx = await this.ensureContext()
+      if (!ctx) return
 
-      this.stopBackgroundMusic();
-      this.customAudioElement = new Audio(customMusicUrl);
-      this.customAudioElement.loop = true;
-      this.customAudioElement.volume = (volume / 100) * 0.5;
+      this.stopBackgroundMusic()
+      this.customAudioElement = new Audio(customMusicUrl)
+      this.customAudioElement.loop = true
+      this.customAudioElement.volume = (volume / 100) * 0.5
 
       try {
-        await this.customAudioElement.play();
+        await this.customAudioElement.play()
       } catch (error) {
-        console.error('Failed to play custom music:', error);
+        console.error('Failed to play custom music:', error)
       }
-      return;
+      return
     }
 
     // Use built-in noise types
-    await this.startBackgroundMusicByType(volume, musicType);
+    await this.startBackgroundMusicByType(volume, musicType)
   }
 
   setBackgroundVolume(volume: number): void {
     if (this.backgroundGain) {
-      this.backgroundGain.gain.value = (volume / 100) * 0.3;
+      this.backgroundGain.gain.value = (volume / 100) * 0.3
     }
     if (this.customAudioElement) {
-      this.customAudioElement.volume = (volume / 100) * 0.5;
+      this.customAudioElement.volume = (volume / 100) * 0.5
     }
   }
 
   stopBackgroundMusic(): void {
     if (this.backgroundNode) {
-      try { this.backgroundNode.stop(); } catch { /* ignore */ }
-      this.backgroundNode.disconnect();
-      this.backgroundNode = null;
+      try {
+        this.backgroundNode.stop()
+      } catch {
+        /* ignore */
+      }
+      this.backgroundNode.disconnect()
+      this.backgroundNode = null
     }
     if (this.backgroundGain) {
-      this.backgroundGain.disconnect();
-      this.backgroundGain = null;
+      this.backgroundGain.disconnect()
+      this.backgroundGain = null
     }
     if (this.backgroundFilter) {
-      this.backgroundFilter.disconnect();
-      this.backgroundFilter = null;
+      this.backgroundFilter.disconnect()
+      this.backgroundFilter = null
     }
     if (this.lfoNode) {
-      try { this.lfoNode.stop(); } catch { /* ignore */ }
-      this.lfoNode.disconnect();
-      this.lfoNode = null;
+      try {
+        this.lfoNode.stop()
+      } catch {
+        /* ignore */
+      }
+      this.lfoNode.disconnect()
+      this.lfoNode = null
     }
     if (this.customAudioElement) {
-      this.customAudioElement.pause();
-      this.customAudioElement = null;
+      this.customAudioElement.pause()
+      this.customAudioElement = null
     }
   }
 
   // Generate pink noise buffer (more natural sounding)
   private createPinkNoiseBuffer(ctx: AudioContext): AudioBuffer {
-    const bufferSize = 4 * ctx.sampleRate;
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const output = buffer.getChannelData(0);
-    let b0, b1, b2, b3, b4, b5, b6;
-    b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
+    const bufferSize = 4 * ctx.sampleRate
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
+    const output = buffer.getChannelData(0)
+    let b0, b1, b2, b3, b4, b5, b6
+    b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0
     for (let i = 0; i < bufferSize; i++) {
-      const white = Math.random() * 2 - 1;
-      b0 = 0.99886 * b0 + white * 0.0555179;
-      b1 = 0.99332 * b1 + white * 0.0750759;
-      b2 = 0.96900 * b2 + white * 0.1538520;
-      b3 = 0.86650 * b3 + white * 0.3104856;
-      b4 = 0.55000 * b4 + white * 0.5329522;
-      b5 = -0.7616 * b5 - white * 0.0168980;
-      output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-      output[i] *= 0.11;
-      b6 = white * 0.115926;
+      const white = Math.random() * 2 - 1
+      b0 = 0.99886 * b0 + white * 0.0555179
+      b1 = 0.99332 * b1 + white * 0.0750759
+      b2 = 0.969 * b2 + white * 0.153852
+      b3 = 0.8665 * b3 + white * 0.3104856
+      b4 = 0.55 * b4 + white * 0.5329522
+      b5 = -0.7616 * b5 - white * 0.016898
+      output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362
+      output[i] *= 0.11
+      b6 = white * 0.115926
     }
-    return buffer;
+    return buffer
   }
 
   // Generate brown noise buffer
   private createBrownNoiseBuffer(ctx: AudioContext): AudioBuffer {
-    const bufferSize = 2 * ctx.sampleRate;
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const output = buffer.getChannelData(0);
-    let lastOut = 0;
+    const bufferSize = 2 * ctx.sampleRate
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
+    const output = buffer.getChannelData(0)
+    let lastOut = 0
     for (let i = 0; i < bufferSize; i++) {
-      const white = Math.random() * 2 - 1;
-      output[i] = (lastOut + 0.02 * white) / 1.02;
-      lastOut = output[i];
-      output[i] *= 3.5;
+      const white = Math.random() * 2 - 1
+      output[i] = (lastOut + 0.02 * white) / 1.02
+      lastOut = output[i]
+      output[i] *= 3.5
     }
-    return buffer;
+    return buffer
   }
 
   // Start background music with specific type
-  async startBackgroundMusicByType(volume: number = 50, type: BackgroundMusicType = 'ocean'): Promise<void> {
-    const ctx = await this.ensureContext();
-    if (!ctx) return;
+  async startBackgroundMusicByType(
+    volume: number = 50,
+    type: BackgroundMusicType = 'ocean'
+  ): Promise<void> {
+    const ctx = await this.ensureContext()
+    if (!ctx) return
 
-    this.stopBackgroundMusic();
+    this.stopBackgroundMusic()
 
-    if (type === 'custom') return;
+    if (type === 'custom') return
 
-    const noiseBuffer = type === 'fire' || type === 'sea'
-      ? this.createBrownNoiseBuffer(ctx)
-      : this.createPinkNoiseBuffer(ctx);
+    const noiseBuffer =
+      type === 'fire' || type === 'sea'
+        ? this.createBrownNoiseBuffer(ctx)
+        : this.createPinkNoiseBuffer(ctx)
 
-    this.backgroundNode = ctx.createBufferSource();
-    this.backgroundNode.buffer = noiseBuffer;
-    this.backgroundNode.loop = true;
+    this.backgroundNode = ctx.createBufferSource()
+    this.backgroundNode.buffer = noiseBuffer
+    this.backgroundNode.loop = true
 
-    this.backgroundFilter = ctx.createBiquadFilter();
-    this.backgroundGain = ctx.createGain();
-    this.backgroundGain.gain.value = (volume / 100) * 0.3;
+    this.backgroundFilter = ctx.createBiquadFilter()
+    this.backgroundGain = ctx.createGain()
+    this.backgroundGain.gain.value = (volume / 100) * 0.3
 
     // Configure based on type
     switch (type) {
       case 'ocean': {
         // Ocean waves - cyclical volume and frequency changes
-        this.backgroundFilter.type = 'lowpass';
-        this.backgroundFilter.frequency.value = 400;
+        this.backgroundFilter.type = 'lowpass'
+        this.backgroundFilter.frequency.value = 400
 
-        this.lfoNode = ctx.createOscillator();
-        this.lfoNode.type = 'sine';
-        this.lfoNode.frequency.value = 0.125; // ~8 second cycle
+        this.lfoNode = ctx.createOscillator()
+        this.lfoNode.type = 'sine'
+        this.lfoNode.frequency.value = 0.125 // ~8 second cycle
 
-        const lfoGain = ctx.createGain();
-        lfoGain.gain.value = 0.5;
-        this.lfoNode.connect(lfoGain);
-        lfoGain.connect(this.backgroundGain.gain);
+        const lfoGain = ctx.createGain()
+        lfoGain.gain.value = 0.5
+        this.lfoNode.connect(lfoGain)
+        lfoGain.connect(this.backgroundGain.gain)
 
-        this.backgroundGain.gain.value = 0.001;
-        const now = ctx.currentTime;
-        const period = 8;
+        this.backgroundGain.gain.value = 0.001
+        const now = ctx.currentTime
+        const period = 8
         for (let i = 0; i < 100; i++) {
-          const t = now + i * period;
-          this.backgroundGain.gain.exponentialRampToValueAtTime((volume / 100) * 0.6, t + 3);
-          this.backgroundFilter.frequency.exponentialRampToValueAtTime(800, t + 3);
-          this.backgroundGain.gain.exponentialRampToValueAtTime(0.01, t + period);
-          this.backgroundFilter.frequency.exponentialRampToValueAtTime(300, t + period);
+          const t = now + i * period
+          this.backgroundGain.gain.exponentialRampToValueAtTime(
+            (volume / 100) * 0.6,
+            t + 3
+          )
+          this.backgroundFilter.frequency.exponentialRampToValueAtTime(
+            800,
+            t + 3
+          )
+          this.backgroundGain.gain.exponentialRampToValueAtTime(
+            0.01,
+            t + period
+          )
+          this.backgroundFilter.frequency.exponentialRampToValueAtTime(
+            300,
+            t + period
+          )
         }
-        this.lfoNode.start();
-        break;
+        this.lfoNode.start()
+        break
       }
 
       case 'wind': {
         // Strong cyclical wind
-        this.backgroundFilter.type = 'bandpass';
-        this.backgroundFilter.Q.value = 5;
-        this.backgroundFilter.frequency.value = 800;
+        this.backgroundFilter.type = 'bandpass'
+        this.backgroundFilter.Q.value = 5
+        this.backgroundFilter.frequency.value = 800
 
-        this.lfoNode = ctx.createOscillator();
-        this.lfoNode.type = 'sine';
-        this.lfoNode.frequency.value = 0.15;
+        this.lfoNode = ctx.createOscillator()
+        this.lfoNode.type = 'sine'
+        this.lfoNode.frequency.value = 0.15
 
-        const windLfoGain = ctx.createGain();
-        windLfoGain.gain.value = 600 * volume / 100;
-        this.lfoNode.connect(windLfoGain);
-        windLfoGain.connect(this.backgroundFilter.frequency);
+        const windLfoGain = ctx.createGain()
+        windLfoGain.gain.value = (600 * volume) / 100
+        this.lfoNode.connect(windLfoGain)
+        windLfoGain.connect(this.backgroundFilter.frequency)
 
-        const windVolLfo = ctx.createGain();
-        windVolLfo.gain.value = 0.3 * volume / 100;
-        this.lfoNode.connect(windVolLfo);
-        windVolLfo.connect(this.backgroundGain.gain);
+        const windVolLfo = ctx.createGain()
+        windVolLfo.gain.value = (0.3 * volume) / 100
+        this.lfoNode.connect(windVolLfo)
+        windVolLfo.connect(this.backgroundGain.gain)
 
-        this.lfoNode.start();
-        break;
+        this.lfoNode.start()
+        break
       }
 
       case 'rain':
-        this.backgroundFilter.type = 'lowpass';
-        this.backgroundFilter.frequency.value = 1500;
-        this.backgroundGain.gain.value = (volume / 100) * 0.4;
-        break;
+        this.backgroundFilter.type = 'lowpass'
+        this.backgroundFilter.frequency.value = 1500
+        this.backgroundGain.gain.value = (volume / 100) * 0.4
+        break
 
       case 'fire':
-        this.backgroundFilter.type = 'lowpass';
-        this.backgroundFilter.frequency.value = 400;
-        this.backgroundGain.gain.value = (volume / 100) * 0.6;
-        break;
+        this.backgroundFilter.type = 'lowpass'
+        this.backgroundFilter.frequency.value = 400
+        this.backgroundGain.gain.value = (volume / 100) * 0.6
+        break
 
       case 'windLight': {
-        this.backgroundFilter.type = 'bandpass';
-        this.backgroundFilter.frequency.value = 800;
+        this.backgroundFilter.type = 'bandpass'
+        this.backgroundFilter.frequency.value = 800
 
-        this.lfoNode = ctx.createOscillator();
-        this.lfoNode.type = 'sine';
-        this.lfoNode.frequency.value = 0.1;
+        this.lfoNode = ctx.createOscillator()
+        this.lfoNode.type = 'sine'
+        this.lfoNode.frequency.value = 0.1
 
-        const lightWindLfoGain = ctx.createGain();
-        lightWindLfoGain.gain.value = 500;
-        this.lfoNode.connect(lightWindLfoGain);
-        lightWindLfoGain.connect(this.backgroundFilter.frequency);
+        const lightWindLfoGain = ctx.createGain()
+        lightWindLfoGain.gain.value = 500
+        this.lfoNode.connect(lightWindLfoGain)
+        lightWindLfoGain.connect(this.backgroundFilter.frequency)
 
-        this.lfoNode.start();
-        this.backgroundGain.gain.value = (volume / 100) * 0.3;
-        break;
+        this.lfoNode.start()
+        this.backgroundGain.gain.value = (volume / 100) * 0.3
+        break
       }
 
       case 'sea':
-        this.backgroundFilter.type = 'lowpass';
-        this.backgroundFilter.frequency.value = 150;
-        this.backgroundGain.gain.value = (volume / 100) * 0.8;
-        break;
+        this.backgroundFilter.type = 'lowpass'
+        this.backgroundFilter.frequency.value = 150
+        this.backgroundGain.gain.value = (volume / 100) * 0.8
+        break
 
       case 'whiteNoise':
       default:
-        this.backgroundFilter.type = 'lowpass';
-        this.backgroundFilter.frequency.value = 400;
-        break;
+        this.backgroundFilter.type = 'lowpass'
+        this.backgroundFilter.frequency.value = 400
+        break
     }
 
-    this.backgroundNode.connect(this.backgroundFilter);
-    this.backgroundFilter.connect(this.backgroundGain);
-    this.backgroundGain.connect(ctx.destination);
+    this.backgroundNode.connect(this.backgroundFilter)
+    this.backgroundFilter.connect(this.backgroundGain)
+    this.backgroundGain.connect(ctx.destination)
 
-    this.backgroundNode.start();
+    this.backgroundNode.start()
   }
 }
 
-export const audioManager = new AudioManager();
+export const audioManager = new AudioManager()

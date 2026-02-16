@@ -77,13 +77,22 @@ export function useBreathingTimer() {
 
       if (currentState.settings.soundEnabled) {
         if (next.phase === 'inhale') {
-          await audioManager.playInhaleTone();
+          await audioManager.playInhaleTone(next.duration, currentState.settings.backgroundMusicEnabled);
         } else if (next.phase === 'hold') {
-          await audioManager.playHoldTone();
+          await audioManager.playHoldTone(
+            next.duration,
+            currentState.settings.backgroundMusicEnabled
+          )
         } else if (next.phase === 'exhale') {
-          await audioManager.playExhaleTone();
+          await audioManager.playExhaleTone(
+            next.duration,
+            currentState.settings.backgroundMusicEnabled
+          )
         } else if (next.phase === 'holdAfterExhale') {
-          await audioManager.playHoldAfterExhaleTone()
+          await audioManager.playHoldAfterExhaleTone(
+            next.duration,
+            currentState.settings.backgroundMusicEnabled
+          )
         }
       }
     } else {
@@ -92,13 +101,12 @@ export function useBreathingTimer() {
   }, [getNextPhase, state]);
 
   useEffect(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+      timerRef.current = null
+    }
     if (state.isRunning && state.phase !== 'idle') {
       timerRef.current = setInterval(tick, 1000);
-    } else {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
     }
 
     return () => {
@@ -122,7 +130,10 @@ export function useBreathingTimer() {
     breathingStore.start();
 
     if (state.settings.soundEnabled) {
-      await audioManager.playInhaleTone();
+      await audioManager.playInhaleTone(
+        state.settings.inhaleSeconds,
+        state.settings.backgroundMusicEnabled
+      )
     }
     if (state.settings.backgroundMusicEnabled) {
       const customUrl = state.settings.backgroundMusicType === 'custom' ? state.settings.customMusicUrl : null;
@@ -137,7 +148,10 @@ export function useBreathingTimer() {
     if (!currentState.isRunning && currentState.phase === 'idle') {
       breathingStore.start();
       if (currentState.settings.soundEnabled) {
-        await audioManager.playInhaleTone();
+        await audioManager.playInhaleTone(
+          state.settings.inhaleSeconds,
+          currentState.settings.backgroundMusicEnabled
+        )
       }
       if (currentState.settings.backgroundMusicEnabled) {
         const customUrl = currentState.settings.backgroundMusicType === 'custom' ? currentState.settings.customMusicUrl : null;
