@@ -15,6 +15,15 @@ const phaseColors: Record<BreathingPhase, string> = {
   holdAfterExhale: 'bg-purple-400',
 };
 
+const phaseBorderColors: Record<BreathingPhase, string> = {
+  idle: 'border-white/20',
+  inhale: 'border-primary',
+  hold: 'border-secondary',
+  exhale: 'border-accent',
+  holdAfterExhale: 'border-purple-400',
+}
+
+
 const phaseGlows: Record<BreathingPhase, string> = {
   idle: 'shadow-none',
   inhale: 'shadow-[0_0_60px_rgba(110,231,183,0.6)]',
@@ -25,22 +34,22 @@ const phaseGlows: Record<BreathingPhase, string> = {
 
 export function BreathingCircle({ phase, secondsRemaining, totalSeconds }: BreathingCircleProps) {
   const getScale = () => {
-    if (phase === 'idle' || totalSeconds === 0) return 1;
-
+    if (phase === 'idle' || totalSeconds === 0) return 0.3;
+    const max = 1;
 
     switch (phase) {
       case 'inhale':
         // return 0 + (progress * 1.5);
-        return 1.5;
+        return max;
       case 'hold':
-        return 1.5;
+        return max
       case 'exhale':
         // return 1.5 - (progress * 1.5);
-        return 1
+        return 0.3
       case 'holdAfterExhale':
-        return 1;
+        return 0.3;
       default:
-        return 1.5;
+        return 0.3;
     }
   };
 
@@ -48,27 +57,33 @@ export function BreathingCircle({ phase, secondsRemaining, totalSeconds }: Breat
     <div className="relative flex items-center justify-center">
       <div
         className={cn(
-          'rounded-full transition-transform duration-1000 ease-in-out border-2 border-solid',
-          phaseColors[phase],
-          phaseGlows[phase]
+          'rounded-full transition-transform duration-1000 ease-in-out border-2 border-solid ',
+          // phaseColors[phase],
+          phaseGlows[phase],
+          phaseBorderColors[phase]
           // phase !== 'idle' && 'animate-glow'
         )}
         style={{
-          width: '180px',
-          height: '180px',
-          transform: `scale(${getScale()})`,
-          transitionDuration: `${totalSeconds}s`,
+          width: '200px',
+          height: '200px',
+          // transform: `scale(${getScale()})`,
+          // transitionDuration: `${totalSeconds}s`,
         }}
       />
       <div
-        className={`absolute rounded-full bg-bg/30 backdrop-blur-sm transition-all  ease-in-out`}
+        className={cn(
+          `absolute rounded-full bg-bg/30 backdrop-blur-sm transition-transform  ease-in-out overflow-hidden`,
+          phaseColors[phase]
+        )}
         style={{
-          width: '160px',
-          height: '160px',
+          width: '200px',
+          height: '200px',
           transform: `scale(${getScale()})`,
           transitionDuration: `${totalSeconds}s`,
         }}
-      />
+      >
+        <div className={cn('w-full h-full bg-bg/30 ')} />
+      </div>
     </div>
   )
 }

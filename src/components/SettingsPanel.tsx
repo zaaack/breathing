@@ -27,7 +27,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // UI States
-  const [isPatternsExpanded, setIsPatternsExpanded] = useState(false);
+  const [isPatternsExpanded, setIsPatternsExpanded] = useState(true);
   const [isMusicExpanded, setIsMusicExpanded] = useState(true);
   const [showCustomPatternForm, setShowCustomPatternForm] = useState(false);
 

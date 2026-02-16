@@ -35,19 +35,24 @@ function App() {
     }
   };
 
+  const [inited, setInited] = useState(false);
+
   useEffect(() => {
     const initSettings = async () => {
       const saved = await loadSettings();
       if (saved) {
         breathingStore.updateSettings(saved);
       }
+      setInited(true);
     };
     initSettings();
   }, []);
 
   useEffect(() => {
-    saveSettings(settings);
-  }, [settings]);
+    if (inited) {
+      saveSettings(settings)
+    }
+  }, [settings, inited])
 
   return (
     <div className="min-h-screen flex flex-col">
