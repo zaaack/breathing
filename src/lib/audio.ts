@@ -33,12 +33,12 @@ class AudioManager {
     return this.audioContext
   }
 
-  toneVolume = 0.5
-  soundType: SoundType = 'noise'
-  async playBreathingSound(
-    stage: 'inhale' | 'hold' | 'exhale',
-    duration: number = 0.5 * 1000
-  ) {
+  soundVolume = 0.5
+  soundType: SoundType = 'breath'
+  setSoundVolume(value: number) {
+    this.soundVolume = value
+  }
+  async playBeepSound(stage: 'inhale' | 'hold' | 'exhale', sec: number = 0.5) {
     const audioCtx = await this.ensureContext()
     if (!audioCtx) return
     const oscillator = audioCtx.createOscillator()
@@ -48,29 +48,26 @@ class AudioManager {
     gainNode.connect(audioCtx.destination)
 
     const now = audioCtx.currentTime
-    const sec = duration / 1000
+    oscillator.type = 'sine' // 只有正弦波最温和
 
-    // 设置不同阶段的频率曲线
     if (stage === 'inhale') {
-      oscillator.type = 'sine'
-      // 从 220Hz 平滑升到 330Hz
       oscillator.frequency.setValueAtTime(220, now)
-      oscillator.frequency.linearRampToValueAtTime(440, now + sec)
+      oscillator.frequency.exponentialRampToValueAtTime(400, now + sec)
     } else if (stage === 'hold') {
-      oscillator.type = 'sine'
-      oscillator.frequency.setValueAtTime(330, now) // 稳定的低音
+      oscillator.frequency.setValueAtTime(330, now)
     } else if (stage === 'exhale') {
-      oscillator.type = 'sine' // 呼气稍微加点质感
-      // 从 196Hz 平滑降到 110Hz
-      oscillator.frequency.setValueAtTime(440, now)
-      oscillator.frequency.linearRampToValueAtTime(220, now + sec)
+      oscillator.frequency.setValueAtTime(400, now)
+      oscillator.frequency.exponentialRampToValueAtTime(220, now + sec)
     }
 
-    // 音量包络：淡入淡出防止刺耳的“咔哒”声
-    gainNode.gain.setValueAtTime(0, now)
-    gainNode.gain.linearRampToValueAtTime(0.3, now + 0.5) // 0.5秒淡入
-    gainNode.gain.setValueAtTime(0.3, now + sec - 0.5)
-    gainNode.gain.linearRampToValueAtTime(0, now + sec) // 0.5秒淡出
+    // 修复：使用极短的指数淡入淡出 (Attack/Release)
+    gainNode.gain.setValueAtTime(0.0001, now)
+    gainNode.gain.exponentialRampToValueAtTime(
+      this.soundVolume * 0.3,
+      now + 0.1
+    )
+    gainNode.gain.setValueAtTime(this.soundVolume * 0.3, now + sec - 0.1)
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + sec)
 
     oscillator.start()
     oscillator.stop(now + sec)
@@ -100,84 +97,78 @@ class AudioManager {
   }
 
   async playInhaleTone(duration: number): Promise<void> {
-    if (this.soundType === 'beep') {
-      return this.playBreathingSound('inhale')
-      return this.beep(440)
-    }
+    if (this.soundType === 'beep') return this.playBeepSound('inhale', )
+
     const ctx = await this.ensureContext()
     if (!ctx) return
 
-    // 使用粉红噪声模拟气流
-    const noiseBuffer = this.createBrownNoiseBuffer(ctx)
+    // 1. 使用粉红噪声（Pink Noise）比棕色噪声更像真实气流，更清脆
+    const noiseBuffer = this.createPinkNoiseBuffer(ctx)
     const source = ctx.createBufferSource()
     source.buffer = noiseBuffer
-    source.loop = true // 确保时间长于缓冲时可以循环
+    source.loop = true
 
+    // 2. 关键：使用带通滤波器 (Bandpass) 模拟呼吸道的共振感
     const filter = ctx.createBiquadFilter()
-    // filter.type = 'bandpass'
-    // filter.Q.value = 1.2 // 适度的共鸣感，听起来更像喉咙发出的气流声
-    filter.type = 'lowpass'
-    filter.frequency.value = 150
+    filter.type = 'bandpass'
+    filter.Q.value = 4.0 // 较高的Q值能产生更明显的“呼啸”质感，但更柔和
 
     const gainNode = ctx.createGain()
-
     source.connect(filter)
     filter.connect(gainNode)
     gainNode.connect(ctx.destination)
 
     const now = ctx.currentTime
 
-    // 吸气包络：频率从低到高，模拟气流加速；音量渐强再微弱收尾
-    filter.frequency.setValueAtTime(300, now)
-    filter.frequency.linearRampToValueAtTime(1200, now + duration)
+    // 3. 频率包络：吸气时频率逐渐升高，模拟吸入感
+    filter.frequency.setValueAtTime(400, now)
+    filter.frequency.exponentialRampToValueAtTime(1000, now + duration)
 
-    gainNode.gain.setValueAtTime(0.001, now)
-    gainNode.gain.linearRampToValueAtTime(
-      this.toneVolume * 0.6,
-      now + duration * 0.8
+    // 4. 音量包络：使用指数级淡入淡出，彻底消除“刺耳”感
+    gainNode.gain.setValueAtTime(0.0001, now)
+    gainNode.gain.exponentialRampToValueAtTime(
+      this.soundVolume * 0.4,
+      now + duration * 0.7
     )
-    gainNode.gain.linearRampToValueAtTime(0.001, now + duration)
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration)
 
     source.start(now)
     source.stop(now + duration)
   }
+
   async playExhaleTone(duration: number): Promise<void> {
-    if (this.soundType === 'beep') {
-      return this.playBreathingSound('exhale')
-      return this.beep(330)
-    }
+    if (this.soundType === 'beep') return this.playBeepSound('exhale', )
+
     const ctx = await this.ensureContext()
     if (!ctx) return
 
-    const noiseBuffer = this.createBrownNoiseBuffer(ctx)
+    const noiseBuffer = this.createPinkNoiseBuffer(ctx)
     const source = ctx.createBufferSource()
     source.buffer = noiseBuffer
     source.loop = true
 
     const filter = ctx.createBiquadFilter()
-    // filter.type = 'bandpass'
-    // filter.Q.value = 1.0
-    filter.type = 'lowpass'
-    filter.frequency.value = 150
+    filter.type = 'bandpass'
+    filter.Q.value = 3.0 // 呼气比吸气稍微松散一点
 
     const gainNode = ctx.createGain()
-
     source.connect(filter)
     filter.connect(gainNode)
     gainNode.connect(ctx.destination)
 
     const now = ctx.currentTime
 
-    // 呼气包络：频率从高回落；一开始气流较大，随后慢慢叹出消失
-    filter.frequency.setValueAtTime(1200, now)
-    filter.frequency.exponentialRampToValueAtTime(250, now + duration)
+    // 频率包络：呼气时频率迅速由高转低，模拟放松感
+    filter.frequency.setValueAtTime(900, now)
+    filter.frequency.exponentialRampToValueAtTime(300, now + duration)
 
-    gainNode.gain.setValueAtTime(0.001, now)
-    gainNode.gain.linearRampToValueAtTime(
-      this.toneVolume * 0.6,
-      now + duration * 0.1
-    ) // 快速达到最大呼气声
-    gainNode.gain.linearRampToValueAtTime(0.001, now + duration) // 缓缓减弱
+    // 音量包络：呼气开始时较快达到峰值，然后缓缓衰减
+    gainNode.gain.setValueAtTime(0.0001, now)
+    gainNode.gain.exponentialRampToValueAtTime(
+      this.soundVolume * 0.5,
+      now + duration * 0.2
+    )
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration)
 
     source.start(now)
     source.stop(now + duration)
@@ -185,30 +176,30 @@ class AudioManager {
 
   async playHoldTone(duration: number): Promise<void> {
     if (this.soundType === 'beep') {
-      return this.playBreathingSound('hold')
+      return this.playBeepSound('hold')
       return this.beep(380)
     }
     const ctx = await this.ensureContext()
     if (!ctx) return
 
-    // 屏息时用一个极其微弱的正弦波模拟体内的“静谧感”或心跳背景音
-    const oscillator = ctx.createOscillator()
-    const gainNode = ctx.createGain()
+    // // 屏息时用一个极其微弱的正弦波模拟体内的“静谧感”或心跳背景音
+    // const oscillator = ctx.createOscillator()
+    // const gainNode = ctx.createGain()
 
-    oscillator.connect(gainNode)
-    gainNode.connect(ctx.destination)
+    // oscillator.connect(gainNode)
+    // gainNode.connect(ctx.destination)
 
-    oscillator.type = 'sine'
-    oscillator.frequency.setValueAtTime(100, ctx.currentTime) // 很低的沉浸音
+    // oscillator.type = 'sine'
+    // oscillator.frequency.setValueAtTime(100, ctx.currentTime) // 很低的沉浸音
 
-    const now = ctx.currentTime
+    // const now = ctx.currentTime
 
-    gainNode.gain.setValueAtTime(0.001, now)
-    gainNode.gain.linearRampToValueAtTime(this.toneVolume * 0.05, now + 0.5) // 音量极低 (0.05)
-    gainNode.gain.linearRampToValueAtTime(0.001, now + duration)
+    // gainNode.gain.setValueAtTime(0.001, now)
+    // gainNode.gain.linearRampToValueAtTime(this.toneVolume * 0.05, now + 0.5) // 音量极低 (0.05)
+    // gainNode.gain.linearRampToValueAtTime(0.001, now + duration)
 
-    oscillator.start(now)
-    oscillator.stop(now + duration)
+    // oscillator.start(now)
+    // oscillator.stop(now + duration)
   }
 
   async playCycleComplete(): Promise<void> {

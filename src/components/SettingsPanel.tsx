@@ -41,6 +41,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
     if (key === 'backgroundMusicVolume') {
       audioManager.setBackgroundVolume(value as number);
     }
+    if (key ===  "soundVolume") {
+      audioManager.setSoundVolume(value as number);
+    }
     // Play immediately when background music type changes and music is enabled
     if (key === 'backgroundMusicType' && settings.backgroundMusicEnabled) {
       const customUrl = (value as string) === 'custom' ? settings.customMusicUrl : null;
@@ -91,7 +94,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
       <div className="relative w-full max-w-sm bg-surface border-l border-white/10 p-6 overflow-y-auto animate-slide-in">
         <div className="flex items-center justify-between mb-6">
@@ -113,8 +119,14 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                 <span className="text-sm font-medium">Breathing Pattern</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-primary font-medium">{currentPattern?.name}</span>
-                {isPatternsExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                <span className="text-xs text-primary font-medium">
+                  {currentPattern?.name}
+                </span>
+                {isPatternsExpanded ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
               </div>
             </button>
 
@@ -133,12 +145,15 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                     >
                       <div className="font-medium truncate">{pattern.name}</div>
                       <div className="text-xs opacity-70">
-                        {pattern.inhaleSeconds}-{pattern.holdSeconds}-{pattern.exhaleSeconds}-{pattern.holdAfterExhaleSeconds}
+                        {pattern.inhaleSeconds}-{pattern.holdSeconds}-
+                        {pattern.exhaleSeconds}-{pattern.holdAfterExhaleSeconds}
                       </div>
                     </button>
                   ))}
                   <button
-                    onClick={() => setShowCustomPatternForm(!showCustomPatternForm)}
+                    onClick={() =>
+                      setShowCustomPatternForm(!showCustomPatternForm)
+                    }
                     className="px-3 py-2 rounded-lg text-sm bg-white/5 text-text-secondary hover:bg-white/10 border border-dashed border-white/20 flex items-center justify-center gap-1"
                   >
                     <Plus className="w-4 h-4" />
@@ -157,24 +172,47 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                       className="w-full px-3 py-2 bg-white/10 rounded-lg text-text text-sm border border-white/10 focus:outline-none focus:border-primary/50"
                     />
                     <div className="grid grid-cols-2 gap-2 text-xs">
-                      {['inhale', 'hold', 'exhale', 'holdAfterExhale'].map((key) => (
-                        <div key={key} className="space-y-1">
-                          <label className="text-text-secondary capitalize">{key.replace('holdAfterExhale', 'Hold After')}</label>
-                          <input
-                            type="number"
-                            min={key.includes('hold') ? "0" : "1"}
-                            value={customPatternValues[key as keyof typeof customPatternValues]}
-                            onChange={(e) => setCustomPatternValues(v => ({ ...v, [key]: parseInt(e.target.value) || 0 }))}
-                            className="w-full px-2 py-1 bg-white/10 rounded text-text border border-white/10"
-                          />
-                        </div>
-                      ))}
+                      {['inhale', 'hold', 'exhale', 'holdAfterExhale'].map(
+                        (key) => (
+                          <div key={key} className="space-y-1">
+                            <label className="text-text-secondary capitalize">
+                              {key.replace('holdAfterExhale', 'Hold After')}
+                            </label>
+                            <input
+                              type="number"
+                              min={key.includes('hold') ? '0' : '1'}
+                              value={
+                                customPatternValues[
+                                  key as keyof typeof customPatternValues
+                                ]
+                              }
+                              onChange={(e) =>
+                                setCustomPatternValues((v) => ({
+                                  ...v,
+                                  [key]: parseInt(e.target.value) || 0,
+                                }))
+                              }
+                              className="w-full px-2 py-1 bg-white/10 rounded text-text border border-white/10"
+                            />
+                          </div>
+                        )
+                      )}
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={handleAddCustomPattern} disabled={!customPatternName.trim()} className="flex-1 text-xs">
+                      <Button
+                        size="sm"
+                        onClick={handleAddCustomPattern}
+                        disabled={!customPatternName.trim()}
+                        className="flex-1 text-xs"
+                      >
                         Save
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setShowCustomPatternForm(false)} className="text-xs">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setShowCustomPatternForm(false)}
+                        className="text-xs"
+                      >
                         Cancel
                       </Button>
                     </div>
@@ -185,8 +223,13 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                 {settings.customPatterns.length > 0 && (
                   <div className="space-y-1 pt-2 border-t border-white/5">
                     {settings.customPatterns.map((pattern) => (
-                      <div key={pattern.id} className="flex items-center justify-between text-xs group">
-                        <span className="text-text-secondary">{pattern.name}</span>
+                      <div
+                        key={pattern.id}
+                        className="flex items-center justify-between text-xs group"
+                      >
+                        <span className="text-text-secondary">
+                          {pattern.name}
+                        </span>
                         <button
                           onClick={() => handleDeleteCustomPattern(pattern.id)}
                           className="text-red-400/50 hover:text-red-400 p-1 transition-colors"
@@ -209,20 +252,47 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             </div>
 
             <div className="space-y-4 pl-6">
-              {([
-                { label: 'Inhale', key: 'inhaleSeconds', color: 'text-primary' },
-                { label: 'Hold', key: 'holdSeconds', color: 'text-secondary' },
-                { label: 'Exhale', key: 'exhaleSeconds', color: 'text-accent' },
-                { label: 'Hold After', key: 'holdAfterExhaleSeconds', color: 'text-purple-400' },
-              ] as const).map((item) => (
+              {(
+                [
+                  {
+                    label: 'Inhale',
+                    key: 'inhaleSeconds',
+                    color: 'text-primary',
+                  },
+                  {
+                    label: 'Hold',
+                    key: 'holdSeconds',
+                    color: 'text-secondary',
+                  },
+                  {
+                    label: 'Exhale',
+                    key: 'exhaleSeconds',
+                    color: 'text-accent',
+                  },
+                  {
+                    label: 'Hold After',
+                    key: 'holdAfterExhaleSeconds',
+                    color: 'text-purple-400',
+                  },
+                ] as const
+              ).map((item) => (
                 <div key={item.key} className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-text-secondary">{item.label}</span>
-                    <span className={`${item.color} font-medium`}>{settings[item.key]}s</span>
+                    <span className={`${item.color} font-medium`}>
+                      {settings[item.key]}s
+                    </span>
                   </div>
                   <Slider
-                    value={[settings[item.key as keyof BreathingSettings] as number]}
-                    onValueChange={([val]) => handleSettingChange(item.key as keyof BreathingSettings, val)}
+                    value={[
+                      settings[item.key as keyof BreathingSettings] as number,
+                    ]}
+                    onValueChange={([val]) =>
+                      handleSettingChange(
+                        item.key as keyof BreathingSettings,
+                        val
+                      )
+                    }
                     min={item.label.includes('Hold') ? 0 : 1}
                     max={20}
                     step={1}
@@ -239,12 +309,18 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             </div>
             <div className="space-y-2 pl-6">
               <div className="flex justify-between text-sm">
-                <span className="text-text-secondary">Duration in minutes (0 = infinite)</span>
-                <span className="text-text font-medium">{settings.totalMinutes} min</span>
+                <span className="text-text-secondary">
+                  Duration in minutes (0 = infinite)
+                </span>
+                <span className="text-text font-medium">
+                  {settings.totalMinutes} min
+                </span>
               </div>
               <Slider
                 value={[settings.totalMinutes]}
-                onValueChange={([val]) => handleSettingChange('totalMinutes', val)}
+                onValueChange={([val]) =>
+                  handleSettingChange('totalMinutes', val)
+                }
                 min={0}
                 max={60}
                 step={1}
@@ -260,34 +336,55 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               </div>
               <Switch
                 checked={settings.soundEnabled}
-                onCheckedChange={(checked) => handleSettingChange('soundEnabled', checked)}
+                onCheckedChange={(checked) =>
+                  handleSettingChange('soundEnabled', checked)
+                }
               />
             </div>
 
             {/* Sound Type Selector */}
             {settings.soundEnabled && (
-              <div className="flex gap-2 pl-6 animate-in fade-in duration-200">
-                <button
-                  onClick={() => handleSettingChange('soundType', 'beep')}
-                  className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all ${
-                    settings.soundType === 'beep'
-                      ? 'bg-primary/20 text-primary border border-primary/50'
-                      : 'bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent'
-                  }`}
-                >
-                  🔔 Beep
-                </button>
-                <button
-                  onClick={() => handleSettingChange('soundType', 'noise')}
-                  className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all ${
-                    settings.soundType === 'noise'
-                      ? 'bg-primary/20 text-primary border border-primary/50'
-                      : 'bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent'
-                  }`}
-                >
-                  🌬️ Noise
-                </button>
-              </div>
+              <>
+                <div className="flex gap-2 pl-6 animate-in fade-in duration-200">
+                  <button
+                    onClick={() => handleSettingChange('soundType', 'breath')}
+                    className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all ${
+                      settings.soundType === 'breath'
+                        ? 'bg-primary/20 text-primary border border-primary/50'
+                        : 'bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent'
+                    }`}
+                  >
+                    🌬️ Breath
+                  </button>
+                  <button
+                    onClick={() => handleSettingChange('soundType', 'beep')}
+                    className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all ${
+                      settings.soundType === 'beep'
+                        ? 'bg-primary/20 text-primary border border-primary/50'
+                        : 'bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent'
+                    }`}
+                  >
+                    🔔 Beep
+                  </button>
+                </div>
+
+                {/* Volume Slider */}
+                <div className="space-y-2 pt-2  pl-6">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-text-secondary">Music Volume</span>
+                    <span className="text-text">{settings.soundVolume}%</span>
+                  </div>
+                  <Slider
+                    value={[settings.soundVolume]}
+                    onValueChange={([val]) =>
+                      handleSettingChange('soundVolume', val)
+                    }
+                    min={0}
+                    max={100}
+                    step={1}
+                  />
+                </div>
+              </>
             )}
 
             {/* Background Music Toggle */}
@@ -299,12 +396,19 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               <Switch
                 checked={settings.backgroundMusicEnabled}
                 onCheckedChange={(checked) => {
-                  handleSettingChange('backgroundMusicEnabled', checked);
+                  handleSettingChange('backgroundMusicEnabled', checked)
                   if (checked) {
-                    const customUrl = settings.backgroundMusicType === 'custom' ? settings.customMusicUrl : null;
-                    audioManager.startBackgroundMusic(settings.backgroundMusicVolume, settings.backgroundMusicType, customUrl);
+                    const customUrl =
+                      settings.backgroundMusicType === 'custom'
+                        ? settings.customMusicUrl
+                        : null
+                    audioManager.startBackgroundMusic(
+                      settings.backgroundMusicVolume,
+                      settings.backgroundMusicType,
+                      customUrl
+                    )
                   } else {
-                    audioManager.stopBackgroundMusic();
+                    audioManager.stopBackgroundMusic()
                   }
                 }}
               />
@@ -312,13 +416,17 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
 
             {/* Background Music Accordion */}
             {settings.backgroundMusicEnabled && (
-              <div className="animate-in fade-in duration-300">
+              <div className="animate-in fade-in duration-300  pl-6">
                 <button
                   onClick={() => setIsMusicExpanded(!isMusicExpanded)}
                   className="flex items-center justify-between w-full text-text-secondary hover:text-text transition-colors mb-3"
                 >
                   <span className="text-xs">Select Sound</span>
-                  {isMusicExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  {isMusicExpanded ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
                 </button>
 
                 {isMusicExpanded && (
@@ -328,7 +436,12 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                       {backgroundMusicOptions.map((option) => (
                         <button
                           key={option.type}
-                          onClick={() => handleSettingChange('backgroundMusicType', option.type)}
+                          onClick={() =>
+                            handleSettingChange(
+                              'backgroundMusicType',
+                              option.type
+                            )
+                          }
                           className={`px-3 py-2 rounded-lg text-sm transition-all text-left flex items-center gap-2 ${
                             settings.backgroundMusicType === option.type
                               ? 'bg-primary/20 text-primary border border-primary/50'
@@ -336,7 +449,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                           }`}
                         >
                           <span>{option.icon}</span>
-                          <span className="truncate">{option.label.replace(/^[^\s]+ /, '')}</span>
+                          <span className="truncate">
+                            {option.label.replace(/^[^\s]+ /, '')}
+                          </span>
                         </button>
                       ))}
                     </div>
@@ -344,7 +459,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                     {/* Custom MP3 Option */}
                     <div className="space-y-2 pt-2 border-t border-white/10">
                       <button
-                        onClick={() => handleSettingChange('backgroundMusicType', 'custom')}
+                        onClick={() =>
+                          handleSettingChange('backgroundMusicType', 'custom')
+                        }
                         className={`w-full px-3 py-2 rounded-lg text-sm transition-all text-left flex items-center gap-2 ${
                           settings.backgroundMusicType === 'custom'
                             ? 'bg-primary/20 text-primary border border-primary/50'
@@ -357,7 +474,13 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
 
                       {settings.backgroundMusicType === 'custom' && (
                         <div className="pl-2">
-                          <input ref={fileInputRef} type="file" accept="audio/*" onChange={handleFileSelect} className="hidden" />
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="audio/*"
+                            onChange={handleFileSelect}
+                            className="hidden"
+                          />
                           <Button
                             variant="outline"
                             size="sm"
@@ -365,7 +488,11 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                             className="w-full flex items-center justify-center gap-2 text-xs"
                           >
                             <FileAudio className="w-4 h-4" />
-                            <span>{settings.customMusicUrl ? 'Change MP3' : 'Select MP3'}</span>
+                            <span>
+                              {settings.customMusicUrl
+                                ? 'Change MP3'
+                                : 'Select MP3'}
+                            </span>
                           </Button>
                         </div>
                       )}
@@ -374,12 +501,18 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                     {/* Volume Slider */}
                     <div className="space-y-2 pt-2">
                       <div className="flex justify-between text-xs">
-                        <span className="text-text-secondary">Music Volume</span>
-                        <span className="text-text">{settings.backgroundMusicVolume}%</span>
+                        <span className="text-text-secondary">
+                          Music Volume
+                        </span>
+                        <span className="text-text">
+                          {settings.backgroundMusicVolume}%
+                        </span>
                       </div>
                       <Slider
                         value={[settings.backgroundMusicVolume]}
-                        onValueChange={([val]) => handleSettingChange('backgroundMusicVolume', val)}
+                        onValueChange={([val]) =>
+                          handleSettingChange('backgroundMusicVolume', val)
+                        }
                         min={0}
                         max={100}
                         step={1}
@@ -393,5 +526,5 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }
