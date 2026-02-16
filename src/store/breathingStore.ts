@@ -103,7 +103,7 @@ const defaultSettings: BreathingSettings = {
   holdAfterExhaleSeconds: 0,
   totalMinutes: 5,
   soundEnabled: true,
-  soundType: 'beep',
+  soundType: 'noise',
   backgroundMusicEnabled: false,
   backgroundMusicVolume: 50,
   backgroundMusicType: 'ocean',

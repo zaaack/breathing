@@ -34,7 +34,7 @@ class AudioManager {
   }
 
   toneVolume = 0.5
-  soundType: SoundType = 'beep'
+  soundType: SoundType = 'noise'
   async playBreathingSound(
     stage: 'inhale' | 'hold' | 'exhale',
     duration: number = 0.5 * 1000

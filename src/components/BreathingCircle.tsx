@@ -27,7 +27,6 @@ export function BreathingCircle({ phase, secondsRemaining, totalSeconds }: Breat
   const getScale = () => {
     if (phase === 'idle' || totalSeconds === 0) return 1;
 
-    const progress = 1 - (secondsRemaining / totalSeconds);
 
     switch (phase) {
       case 'inhale':
