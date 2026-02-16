@@ -1,5 +1,5 @@
 import { X, Volume2, Music, Clock, Repeat, Plus, Trash2, FileAudio, Disc, ChevronDown, ChevronUp } from 'lucide-react';
-import { breathingStore, builtInPatterns, type BreathingSettings, type BreathingPattern } from '@/store/breathingStore';
+import { breathingStore, builtInPatterns, type BreathingSettings, type BreathingPattern, type BackgroundMusicType } from '@/store/breathingStore';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
@@ -11,12 +11,24 @@ interface SettingsPanelProps {
   onClose: () => void;
 }
 
+// Background music options with labels and icons
+const backgroundMusicOptions: { type: BackgroundMusicType; label: string; icon: string }[] = [
+  { type: 'ocean', label: '🌊 Ocean Waves', icon: '🌊' },
+  { type: 'wind', label: '🌬️ Strong Wind', icon: '🌬️' },
+  { type: 'rain', label: '🌧️ Rain', icon: '🌧️' },
+  { type: 'fire', label: '🔥 Campfire', icon: '🔥' },
+  { type: 'windLight', label: '💨 Light Breeze', icon: '💨' },
+  { type: 'sea', label: '🌊 Deep Sea', icon: '🌊' },
+  { type: 'whiteNoise', label: '📻 White Noise', icon: '📻' },
+];
+
 export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
   const settings = breathingStore.useState((state: { settings: BreathingSettings }) => state.settings);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // UI States
   const [isPatternsExpanded, setIsPatternsExpanded] = useState(false);
+  const [isMusicExpanded, setIsMusicExpanded] = useState(true);
   const [showCustomPatternForm, setShowCustomPatternForm] = useState(false);
 
   const [customPatternName, setCustomPatternName] = useState('');
@@ -28,6 +40,11 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
     breathingStore.updateSettings({ [key]: value });
     if (key === 'backgroundMusicVolume') {
       audioManager.setBackgroundVolume(value as number);
+    }
+    // Play immediately when background music type changes and music is enabled
+    if (key === 'backgroundMusicType' && settings.backgroundMusicEnabled) {
+      const customUrl = (value as string) === 'custom' ? settings.customMusicUrl : null;
+      audioManager.startBackgroundMusic(settings.backgroundMusicVolume, value as BackgroundMusicType, customUrl);
     }
   };
 
@@ -247,6 +264,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               />
             </div>
 
+            {/* Background Music Toggle */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-text-secondary">
                 <Music className="w-4 h-4" />
@@ -254,56 +272,95 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               </div>
               <Switch
                 checked={settings.backgroundMusicEnabled}
-                onCheckedChange={(checked) => handleSettingChange('backgroundMusicEnabled', checked)}
+                onCheckedChange={(checked) => {
+                  handleSettingChange('backgroundMusicEnabled', checked);
+                  if (checked) {
+                    const customUrl = settings.backgroundMusicType === 'custom' ? settings.customMusicUrl : null;
+                    audioManager.startBackgroundMusic(settings.backgroundMusicVolume, settings.backgroundMusicType, customUrl);
+                  } else {
+                    audioManager.stopBackgroundMusic();
+                  }
+                }}
               />
             </div>
 
+            {/* Background Music Accordion */}
             {settings.backgroundMusicEnabled && (
-              <div className="space-y-4 pl-6 animate-in fade-in duration-300">
-                <div className="flex gap-2">
-                  {['whiteNoise', 'custom'].map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => handleSettingChange('backgroundMusicType', type)}
-                      className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all ${
-                        settings.backgroundMusicType === type
-                          ? 'bg-primary/20 text-primary border border-primary/50'
-                          : 'bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent'
-                      }`}
-                    >
-                      {type === 'whiteNoise' ? 'White Noise' : 'MP3 File'}
-                    </button>
-                  ))}
-                </div>
+              <div className="animate-in fade-in duration-300">
+                <button
+                  onClick={() => setIsMusicExpanded(!isMusicExpanded)}
+                  className="flex items-center justify-between w-full text-text-secondary hover:text-text transition-colors mb-3"
+                >
+                  <span className="text-xs">Select Sound</span>
+                  {isMusicExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
 
-                {settings.backgroundMusicType === 'custom' && (
-                  <div className="space-y-2">
-                    <input ref={fileInputRef} type="file" accept="audio/*" onChange={handleFileSelect} className="hidden" />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-full flex items-center gap-2 text-xs"
-                    >
-                      <FileAudio className="w-4 h-4" />
-                      <span>{settings.customMusicUrl ? 'Change MP3' : 'Select MP3'}</span>
-                    </Button>
+                {isMusicExpanded && (
+                  <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                    {/* Built-in Noise Options */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {backgroundMusicOptions.map((option) => (
+                        <button
+                          key={option.type}
+                          onClick={() => handleSettingChange('backgroundMusicType', option.type)}
+                          className={`px-3 py-2 rounded-lg text-sm transition-all text-left flex items-center gap-2 ${
+                            settings.backgroundMusicType === option.type
+                              ? 'bg-primary/20 text-primary border border-primary/50'
+                              : 'bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent'
+                          }`}
+                        >
+                          <span>{option.icon}</span>
+                          <span className="truncate">{option.label.replace(/^[^\s]+ /, '')}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Custom MP3 Option */}
+                    <div className="space-y-2 pt-2 border-t border-white/10">
+                      <button
+                        onClick={() => handleSettingChange('backgroundMusicType', 'custom')}
+                        className={`w-full px-3 py-2 rounded-lg text-sm transition-all text-left flex items-center gap-2 ${
+                          settings.backgroundMusicType === 'custom'
+                            ? 'bg-primary/20 text-primary border border-primary/50'
+                            : 'bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent'
+                        }`}
+                      >
+                        <FileAudio className="w-4 h-4" />
+                        <span>Custom MP3 File</span>
+                      </button>
+
+                      {settings.backgroundMusicType === 'custom' && (
+                        <div className="pl-2">
+                          <input ref={fileInputRef} type="file" accept="audio/*" onChange={handleFileSelect} className="hidden" />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full flex items-center justify-center gap-2 text-xs"
+                          >
+                            <FileAudio className="w-4 h-4" />
+                            <span>{settings.customMusicUrl ? 'Change MP3' : 'Select MP3'}</span>
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Volume Slider */}
+                    <div className="space-y-2 pt-2">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-text-secondary">Music Volume</span>
+                        <span className="text-text">{settings.backgroundMusicVolume}%</span>
+                      </div>
+                      <Slider
+                        value={[settings.backgroundMusicVolume]}
+                        onValueChange={([val]) => handleSettingChange('backgroundMusicVolume', val)}
+                        min={0}
+                        max={100}
+                        step={1}
+                      />
+                    </div>
                   </div>
                 )}
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-text-secondary">Music Volume</span>
-                    <span className="text-text">{settings.backgroundMusicVolume}%</span>
-                  </div>
-                  <Slider
-                    value={[settings.backgroundMusicVolume]}
-                    onValueChange={([val]) => handleSettingChange('backgroundMusicVolume', val)}
-                    min={0}
-                    max={100}
-                    step={1}
-                  />
-                </div>
               </div>
             )}
           </div>

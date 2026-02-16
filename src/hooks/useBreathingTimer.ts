@@ -98,7 +98,7 @@ export function useBreathingTimer() {
     if (state.isRunning && state.phase === 'inhale' && state.secondsRemaining === state.settings.inhaleSeconds) {
       if (state.settings.backgroundMusicEnabled) {
         const customUrl = state.settings.backgroundMusicType === 'custom' ? state.settings.customMusicUrl : null;
-        audioManager.startBackgroundMusic(state.settings.backgroundMusicVolume, customUrl);
+        audioManager.startBackgroundMusic(state.settings.backgroundMusicVolume, state.settings.backgroundMusicType, customUrl);
       }
     }
   }, [state.isRunning, state.settings]);
@@ -112,7 +112,7 @@ export function useBreathingTimer() {
     }
     if (state.settings.backgroundMusicEnabled) {
       const customUrl = state.settings.backgroundMusicType === 'custom' ? state.settings.customMusicUrl : null;
-      audioManager.startBackgroundMusic(state.settings.backgroundMusicVolume, customUrl);
+      audioManager.startBackgroundMusic(state.settings.backgroundMusicVolume, state.settings.backgroundMusicType, customUrl);
     }
   }, [state.settings]);
 
@@ -127,7 +127,7 @@ export function useBreathingTimer() {
       }
       if (currentState.settings.backgroundMusicEnabled) {
         const customUrl = currentState.settings.backgroundMusicType === 'custom' ? currentState.settings.customMusicUrl : null;
-        audioManager.startBackgroundMusic(currentState.settings.backgroundMusicVolume, customUrl);
+        audioManager.startBackgroundMusic(currentState.settings.backgroundMusicVolume, currentState.settings.backgroundMusicType, customUrl);
       }
     } else if (currentState.isRunning) {
       breathingStore.setRunning(false);
@@ -136,7 +136,7 @@ export function useBreathingTimer() {
       breathingStore.setRunning(true);
       if (currentState.settings.backgroundMusicEnabled) {
         const customUrl = currentState.settings.backgroundMusicType === 'custom' ? currentState.settings.customMusicUrl : null;
-        audioManager.startBackgroundMusic(currentState.settings.backgroundMusicVolume, customUrl);
+        audioManager.startBackgroundMusic(currentState.settings.backgroundMusicVolume, currentState.settings.backgroundMusicType, customUrl);
       }
     }
   }, [state]);

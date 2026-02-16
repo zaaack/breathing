@@ -21,6 +21,8 @@ export const builtInPatterns: BreathingPattern[] = [
   { id: '6-0-6-0', name: '6-0-6-0 Easy', inhaleSeconds: 6, holdSeconds: 0, exhaleSeconds: 6, holdAfterExhaleSeconds: 0, isBuiltIn: true },
 ];
 
+export type BackgroundMusicType = 'whiteNoise' | 'ocean' | 'wind' | 'rain' | 'fire' | 'windLight' | 'sea' | 'custom';
+
 export interface BreathingSettings {
   inhaleSeconds: number;
   holdSeconds: number;
@@ -30,7 +32,7 @@ export interface BreathingSettings {
   soundEnabled: boolean;
   backgroundMusicEnabled: boolean;
   backgroundMusicVolume: number;
-  backgroundMusicType: 'whiteNoise' | 'custom';
+  backgroundMusicType: BackgroundMusicType;
   customMusicUrl: string | null;
   currentPatternId: string;
   customPatterns: BreathingPattern[];
@@ -53,7 +55,7 @@ const defaultSettings: BreathingSettings = {
   soundEnabled: true,
   backgroundMusicEnabled: false,
   backgroundMusicVolume: 50,
-  backgroundMusicType: 'whiteNoise',
+  backgroundMusicType: 'ocean',
   customMusicUrl: null,
   currentPatternId: '4-7-8',
   customPatterns: [],
