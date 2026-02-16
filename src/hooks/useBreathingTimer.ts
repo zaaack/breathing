@@ -76,22 +76,20 @@ export function useBreathingTimer() {
       breathingStore.setSecondsRemaining(next.duration);
 
       if (currentState.settings.soundEnabled) {
+        audioManager.soundType = state.settings.soundType;
         if (next.phase === 'inhale') {
-          await audioManager.playInhaleTone(next.duration, currentState.settings.backgroundMusicEnabled);
+          await audioManager.playInhaleTone(next.duration);
         } else if (next.phase === 'hold') {
           await audioManager.playHoldTone(
             next.duration,
-            currentState.settings.backgroundMusicEnabled
           )
         } else if (next.phase === 'exhale') {
           await audioManager.playExhaleTone(
             next.duration,
-            currentState.settings.backgroundMusicEnabled
           )
         } else if (next.phase === 'holdAfterExhale') {
           await audioManager.playHoldAfterExhaleTone(
             next.duration,
-            currentState.settings.backgroundMusicEnabled
           )
         }
       }
@@ -130,10 +128,8 @@ export function useBreathingTimer() {
     breathingStore.start();
 
     if (state.settings.soundEnabled) {
-      await audioManager.playInhaleTone(
-        state.settings.inhaleSeconds,
-        state.settings.backgroundMusicEnabled
-      )
+        audioManager.soundType = state.settings.soundType
+        await audioManager.playInhaleTone(state.settings.inhaleSeconds)
     }
     if (state.settings.backgroundMusicEnabled) {
       const customUrl = state.settings.backgroundMusicType === 'custom' ? state.settings.customMusicUrl : null;
@@ -148,9 +144,9 @@ export function useBreathingTimer() {
     if (!currentState.isRunning && currentState.phase === 'idle') {
       breathingStore.start();
       if (currentState.settings.soundEnabled) {
+        audioManager.soundType = state.settings.soundType;
         await audioManager.playInhaleTone(
           state.settings.inhaleSeconds,
-          currentState.settings.backgroundMusicEnabled
         )
       }
       if (currentState.settings.backgroundMusicEnabled) {

@@ -22,20 +22,21 @@ export const builtInPatterns: BreathingPattern[] = [
 ];
 
 export type BackgroundMusicType = 'whiteNoise' | 'ocean' | 'wind' | 'rain' | 'fire' | 'windLight' | 'sea' | 'custom';
-
+export type SoundType = 'beep' | 'noise';
 export interface BreathingSettings {
-  inhaleSeconds: number;
-  holdSeconds: number;
-  exhaleSeconds: number;
-  holdAfterExhaleSeconds: number;
-  totalMinutes: number;
-  soundEnabled: boolean;
-  backgroundMusicEnabled: boolean;
-  backgroundMusicVolume: number;
-  backgroundMusicType: BackgroundMusicType;
-  customMusicUrl: string | null;
-  currentPatternId: string;
-  customPatterns: BreathingPattern[];
+  inhaleSeconds: number
+  holdSeconds: number
+  exhaleSeconds: number
+  holdAfterExhaleSeconds: number
+  totalMinutes: number
+  soundEnabled: boolean
+  soundType: SoundType
+  backgroundMusicEnabled: boolean
+  backgroundMusicVolume: number
+  backgroundMusicType: BackgroundMusicType
+  customMusicUrl: string | null
+  currentPatternId: string
+  customPatterns: BreathingPattern[]
 }
 
 export interface BreathingState {
@@ -54,6 +55,7 @@ const defaultSettings: BreathingSettings = {
   holdAfterExhaleSeconds: 0,
   totalMinutes: 5,
   soundEnabled: true,
+  soundType: 'beep',
   backgroundMusicEnabled: false,
   backgroundMusicVolume: 50,
   backgroundMusicType: 'ocean',

@@ -1,4 +1,4 @@
-import { type BackgroundMusicType } from '@/store/breathingStore'
+import { type BackgroundMusicType, type SoundType } from '@/store/breathingStore'
 
 class AudioManager {
   private audioContext: AudioContext | null = null
@@ -34,13 +34,10 @@ class AudioManager {
   }
 
   toneVolume = 0.5
-
-  async playInhaleTone(
-    duration: number,
-    backgroundMusicEnabled: boolean
-  ): Promise<void> {
-    if (backgroundMusicEnabled) {
-      return this.beep(440, )
+  soundType: SoundType = 'beep'
+  async playInhaleTone(duration: number): Promise<void> {
+    if (this.soundType === 'beep') {
+      return this.beep(440)
     }
     const ctx = await this.ensureContext()
     if (!ctx) return
@@ -106,12 +103,9 @@ class AudioManager {
 
   // 调用示例
   // beep(440, 2000); // 播放 440Hz 的声音 2 秒
-  async playExhaleTone(
-    duration: number,
-    backgroundMusicEnabled: boolean
-  ): Promise<void> {
-    if (backgroundMusicEnabled) {
-      return this.beep(330, )
+  async playExhaleTone(duration: number): Promise<void> {
+    if (this.soundType === 'beep') {
+      return this.beep(330)
     }
     const ctx = await this.ensureContext()
     if (!ctx) return
@@ -150,11 +144,8 @@ class AudioManager {
     source.stop(now + duration)
   }
 
-  async playHoldTone(
-    duration: number,
-    backgroundMusicEnabled: boolean
-  ): Promise<void> {
-    if (backgroundMusicEnabled) {
+  async playHoldTone(duration: number): Promise<void> {
+    if (this.soundType === 'beep') {
       return this.beep(380, 2000)
     }
     const ctx = await this.ensureContext()
@@ -180,11 +171,8 @@ class AudioManager {
     oscillator.stop(now + duration)
   }
 
-  async playHoldAfterExhaleTone(
-    duration: number,
-    backgroundMusicEnabled: boolean
-  ): Promise<void> {
-    if (backgroundMusicEnabled) {
+  async playHoldAfterExhaleTone(duration: number): Promise<void> {
+    if (this.soundType === 'beep') {
       return this.beep(380)
     }
     // 呼气后的屏息，可以使用和吸气后屏息相同的逻辑，也可以稍微改变频率以示区分
