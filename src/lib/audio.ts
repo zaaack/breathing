@@ -297,12 +297,12 @@ class AudioManager {
         this.lfoNode.frequency.value = 0.15;
 
         const windLfoGain = ctx.createGain();
-        windLfoGain.gain.value = 600;
+        windLfoGain.gain.value = 600 * volume / 100;
         this.lfoNode.connect(windLfoGain);
         windLfoGain.connect(this.backgroundFilter.frequency);
 
         const windVolLfo = ctx.createGain();
-        windVolLfo.gain.value = 0.3;
+        windVolLfo.gain.value = 0.3 * volume / 100;
         this.lfoNode.connect(windVolLfo);
         windVolLfo.connect(this.backgroundGain.gain);
 
