@@ -7,7 +7,12 @@ export function useBreathingTimer() {
   const state = breathingStore.useState();
 
   const getNextPhase = useCallback((currentPhase: BreathingPhase): { phase: BreathingPhase; duration: number } | null => {
-    const { settings, currentCycle } = state;
+    const { settings, totalSecondsRemaining } = state;
+
+    // Check if time is up (for minute-based countdown)
+    if (settings.totalMinutes > 0 && totalSecondsRemaining <= 0) {
+      return null;
+    }
 
     switch (currentPhase) {
       case 'inhale':
@@ -21,14 +26,12 @@ export function useBreathingTimer() {
         if (settings.holdAfterExhaleSeconds > 0) {
           return { phase: 'holdAfterExhale', duration: settings.holdAfterExhaleSeconds };
         }
-        if (settings.totalCycles > 0 && currentCycle >= settings.totalCycles) {
-          return null;
-        }
+        // For infinite mode (totalMinutes = 0), continue forever
+        // For timed mode, we check in tick() instead
         return { phase: 'inhale', duration: settings.inhaleSeconds };
       case 'holdAfterExhale':
-        if (settings.totalCycles > 0 && currentCycle >= settings.totalCycles) {
-          return null;
-        }
+        // For infinite mode (totalMinutes = 0), continue forever
+        // For timed mode, we check in tick() instead
         return { phase: 'inhale', duration: settings.inhaleSeconds };
       default:
         return null;
@@ -39,6 +42,17 @@ export function useBreathingTimer() {
     const currentState = state;
 
     if (!currentState.isRunning || currentState.phase === 'idle') return;
+
+    // Decrement total seconds remaining for countdown
+    if (currentState.settings.totalMinutes > 0) {
+      const newTotalSeconds = currentState.totalSecondsRemaining - 1;
+      if (newTotalSeconds <= 0) {
+        breathingStore.reset();
+        audioManager.stopBackgroundMusic();
+        return;
+      }
+      breathingStore.setTotalSecondsRemaining(newTotalSeconds);
+    }
 
     const newSecondsRemaining = currentState.secondsRemaining - 1;
 
@@ -69,7 +83,7 @@ export function useBreathingTimer() {
         } else if (next.phase === 'exhale') {
           await audioManager.playExhaleTone();
         } else if (next.phase === 'holdAfterExhale') {
-          await audioManager.playHoldTone()
+          await audioManager.playHoldAfterExhaleTone()
         }
       }
     } else {

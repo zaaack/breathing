@@ -235,18 +235,18 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-text-secondary">
               <Repeat className="w-4 h-4" />
-              <span className="text-sm font-medium">Cycles</span>
+              <span className="text-sm font-medium">Timer</span>
             </div>
             <div className="space-y-2 pl-6">
               <div className="flex justify-between text-sm">
-                <span className="text-text-secondary">Total cycles (0 = infinite)</span>
-                <span className="text-text font-medium">{settings.totalCycles}</span>
+                <span className="text-text-secondary">Duration in minutes (0 = infinite)</span>
+                <span className="text-text font-medium">{settings.totalMinutes} min</span>
               </div>
               <Slider
-                value={[settings.totalCycles]}
-                onValueChange={([val]) => handleSettingChange('totalCycles', val)}
+                value={[settings.totalMinutes]}
+                onValueChange={([val]) => handleSettingChange('totalMinutes', val)}
                 min={0}
-                max={50}
+                max={60}
                 step={1}
               />
             </div>

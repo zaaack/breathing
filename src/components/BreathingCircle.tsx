@@ -26,9 +26,9 @@ const phaseGlows: Record<BreathingPhase, string> = {
 export function BreathingCircle({ phase, secondsRemaining, totalSeconds }: BreathingCircleProps) {
   const getScale = () => {
     if (phase === 'idle' || totalSeconds === 0) return 1;
-    
+
     const progress = 1 - (secondsRemaining / totalSeconds);
-    
+
     switch (phase) {
       case 'inhale':
         return 1 + (progress * 0.5);
@@ -53,8 +53,8 @@ export function BreathingCircle({ phase, secondsRemaining, totalSeconds }: Breat
           phase !== 'idle' && 'animate-glow'
         )}
         style={{
-          width: '200px',
-          height: '200px',
+          width: '180px',
+          height: '180px',
           transform: `scale(${getScale()})`,
         }}
       />

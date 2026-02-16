@@ -4,7 +4,7 @@ import { BreathingCircle } from '@/components/BreathingCircle';
 import { SettingsPanel } from '@/components/SettingsPanel';
 import { Button } from '@/components/ui/button';
 import { useBreathingTimer } from '@/hooks/useBreathingTimer';
-import { breathingStore, type BreathingState } from '@/store/breathingStore';
+import { breathingStore } from '@/store/breathingStore';
 import { loadSettings, saveSettings } from '@/lib/storage';
 import { cn } from '@/lib/utils';
 
@@ -18,8 +18,7 @@ const phaseLabels: Record<string, string> = {
 
 function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const { phase, isRunning, currentCycle, secondsRemaining, toggle, reset } = useBreathingTimer();
-  const settings = breathingStore.useState((state: BreathingState) => state.settings);
+  const { phase, isRunning, currentCycle, secondsRemaining, totalSecondsRemaining, toggle, reset, settings } = useBreathingTimer();
 
   const getTotalSeconds = () => {
     switch (phase) {
@@ -63,8 +62,8 @@ function App() {
         </Button>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-4">
-        <div className="text-center space-y-8">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 -mt-5">
+        <div className="text-center space-y-4">
           <div className="flex flex-col items-center gap-4 relative mb-4">
             <BreathingCircle
               phase={phase}
@@ -91,13 +90,17 @@ function App() {
             </div>
           </div>
 
-          {phase !== 'idle' && currentCycle > 0 && (
-            <div className="text-text-secondary">
-              Cycle {currentCycle} of {settings.totalCycles}
+          {phase !== 'idle' && (
+            <div className="text-text-secondary pt-8">
+              {settings.totalMinutes > 0 ? (
+                <>Time remaining: {Math.floor(totalSecondsRemaining / 60)}:{String(totalSecondsRemaining % 60).padStart(2, '0')}</>
+              ) : (
+                <>Cycle {currentCycle}</>
+              )}
             </div>
           )}
 
-          <div className="flex items-center justify-center gap-4 pt-4">
+          <div className="flex items-center justify-center gap-2 pt-1">
             <Button onClick={toggle} size="lg" className="min-w-[140px]">
               {isRunning ? (
                 <>

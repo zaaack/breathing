@@ -28,7 +28,7 @@ export interface BreathingSettings {
   holdSeconds: number;
   exhaleSeconds: number;
   holdAfterExhaleSeconds: number;
-  totalCycles: number;
+  totalMinutes: number;
   soundEnabled: boolean;
   backgroundMusicEnabled: boolean;
   backgroundMusicVolume: number;
@@ -43,6 +43,7 @@ export interface BreathingState {
   isRunning: boolean;
   currentCycle: number;
   secondsRemaining: number;
+  totalSecondsRemaining: number;
   settings: BreathingSettings;
 }
 
@@ -51,7 +52,7 @@ const defaultSettings: BreathingSettings = {
   holdSeconds: 7,
   exhaleSeconds: 8,
   holdAfterExhaleSeconds: 0,
-  totalCycles: 4,
+  totalMinutes: 5,
   soundEnabled: true,
   backgroundMusicEnabled: false,
   backgroundMusicVolume: 50,
@@ -66,6 +67,7 @@ export const initialState: BreathingState = {
   isRunning: false,
   currentCycle: 0,
   secondsRemaining: 0,
+  totalSecondsRemaining: 0,
   settings: defaultSettings,
 };
 
@@ -88,6 +90,10 @@ class BreathingStore extends LocalStore<BreathingState> {
 
   setSecondsRemaining(secondsRemaining: number) {
     this.setState({ secondsRemaining });
+  }
+
+  setTotalSecondsRemaining(totalSecondsRemaining: number) {
+    this.setState({ totalSecondsRemaining });
   }
 
   updateSettings(settings: Partial<BreathingSettings>) {
@@ -142,16 +148,21 @@ class BreathingStore extends LocalStore<BreathingState> {
       isRunning: false,
       currentCycle: 0,
       secondsRemaining: 0,
+      totalSecondsRemaining: 0,
     });
   }
 
   start() {
-    this.setState((state) => ({
-      isRunning: true,
-      currentCycle: state.currentCycle || 1,
-      phase: 'inhale',
-      secondsRemaining: state.settings.inhaleSeconds,
-    }));
+    this.setState((state) => {
+      const totalSeconds = state.settings.totalMinutes > 0 ? state.settings.totalMinutes * 60 : 0;
+      return {
+        isRunning: true,
+        currentCycle: state.currentCycle || 1,
+        phase: 'inhale',
+        secondsRemaining: state.settings.inhaleSeconds,
+        totalSecondsRemaining: totalSeconds,
+      };
+    });
   }
 
   toggle() {

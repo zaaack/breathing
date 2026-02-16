@@ -47,7 +47,7 @@ class AudioManager {
     oscillator.frequency.setValueAtTime(220, ctx.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.5);
 
-    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+    gainNode.gain.setValueAtTime(1, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
 
     oscillator.start(ctx.currentTime);
@@ -67,7 +67,7 @@ class AudioManager {
     oscillator.type = 'sine';
     oscillator.frequency.setValueAtTime(440, ctx.currentTime);
 
-    gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
+    gainNode.gain.setValueAtTime(1, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
 
     oscillator.start(ctx.currentTime);
@@ -88,7 +88,7 @@ class AudioManager {
     oscillator.frequency.setValueAtTime(440, ctx.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 0.5);
 
-    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+    gainNode.gain.setValueAtTime(1, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
 
     oscillator.start(ctx.currentTime);
@@ -146,12 +146,12 @@ class AudioManager {
       // Custom MP3 file
       const ctx = await this.ensureContext();
       if (!ctx) return;
-      
+
       this.stopBackgroundMusic();
       this.customAudioElement = new Audio(customMusicUrl);
       this.customAudioElement.loop = true;
       this.customAudioElement.volume = (volume / 100) * 0.5;
-      
+
       try {
         await this.customAudioElement.play();
       } catch (error) {
@@ -245,7 +245,7 @@ class AudioManager {
     if (type === 'custom') return;
 
     const noiseBuffer = type === 'fire' || type === 'sea'
-      ? this.createBrownNoiseBuffer(ctx) 
+      ? this.createBrownNoiseBuffer(ctx)
       : this.createPinkNoiseBuffer(ctx);
 
     this.backgroundNode = ctx.createBufferSource();
@@ -262,16 +262,16 @@ class AudioManager {
         // Ocean waves - cyclical volume and frequency changes
         this.backgroundFilter.type = 'lowpass';
         this.backgroundFilter.frequency.value = 400;
-        
+
         this.lfoNode = ctx.createOscillator();
         this.lfoNode.type = 'sine';
         this.lfoNode.frequency.value = 0.125; // ~8 second cycle
-        
+
         const lfoGain = ctx.createGain();
         lfoGain.gain.value = 0.5;
         this.lfoNode.connect(lfoGain);
         lfoGain.connect(this.backgroundGain.gain);
-        
+
         this.backgroundGain.gain.value = 0.001;
         const now = ctx.currentTime;
         const period = 8;
@@ -291,21 +291,21 @@ class AudioManager {
         this.backgroundFilter.type = 'bandpass';
         this.backgroundFilter.Q.value = 5;
         this.backgroundFilter.frequency.value = 800;
-        
+
         this.lfoNode = ctx.createOscillator();
         this.lfoNode.type = 'sine';
         this.lfoNode.frequency.value = 0.15;
-        
+
         const windLfoGain = ctx.createGain();
         windLfoGain.gain.value = 600;
         this.lfoNode.connect(windLfoGain);
         windLfoGain.connect(this.backgroundFilter.frequency);
-        
+
         const windVolLfo = ctx.createGain();
         windVolLfo.gain.value = 0.3;
         this.lfoNode.connect(windVolLfo);
         windVolLfo.connect(this.backgroundGain.gain);
-        
+
         this.lfoNode.start();
         break;
       }
@@ -325,16 +325,16 @@ class AudioManager {
       case 'windLight': {
         this.backgroundFilter.type = 'bandpass';
         this.backgroundFilter.frequency.value = 800;
-        
+
         this.lfoNode = ctx.createOscillator();
         this.lfoNode.type = 'sine';
         this.lfoNode.frequency.value = 0.1;
-        
+
         const lightWindLfoGain = ctx.createGain();
         lightWindLfoGain.gain.value = 500;
         this.lfoNode.connect(lightWindLfoGain);
         lightWindLfoGain.connect(this.backgroundFilter.frequency);
-        
+
         this.lfoNode.start();
         this.backgroundGain.gain.value = (volume / 100) * 0.3;
         break;
