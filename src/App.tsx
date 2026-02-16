@@ -13,6 +13,7 @@ const phaseLabels: Record<string, string> = {
   inhale: 'Inhale',
   hold: 'Hold',
   exhale: 'Exhale',
+  holdAfterExhale: 'Hold',
 };
 
 function App() {
@@ -28,6 +29,8 @@ function App() {
         return settings.holdSeconds;
       case 'exhale':
         return settings.exhaleSeconds;
+      case 'holdAfterExhale':
+        return settings.holdAfterExhaleSeconds;
       default:
         return 0;
     }
@@ -50,7 +53,7 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="flex items-center justify-between p-6">
-        <h1 className="text-2xl font-semibold text-text">4-7-8 Breathing</h1>
+        <h1 className="text-2xl font-semibold text-text">Breathing Timer</h1>
         <Button
           variant="ghost"
           size="icon"
@@ -75,6 +78,7 @@ function App() {
                 phase === 'inhale' && 'text-primary',
                 phase === 'hold' && 'text-secondary',
                 phase === 'exhale' && 'text-accent',
+                phase === 'holdAfterExhale' && 'text-purple-400',
                 phase === 'idle' && 'text-text'
               )}
             >
@@ -116,7 +120,9 @@ function App() {
       </main>
 
       <footer className="p-6 text-center text-text-secondary text-sm">
-        <p>Breathe in for 4 seconds, hold for 7, exhale for 8</p>
+        <p>
+          {settings.inhaleSeconds}-{settings.holdSeconds}-{settings.exhaleSeconds}-{settings.holdAfterExhaleSeconds} Breathing
+        </p>
       </footer>
 
       <SettingsPanel

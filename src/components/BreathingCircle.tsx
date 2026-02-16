@@ -12,6 +12,7 @@ const phaseColors: Record<BreathingPhase, string> = {
   inhale: 'bg-primary',
   hold: 'bg-secondary',
   exhale: 'bg-accent',
+  holdAfterExhale: 'bg-purple-400',
 };
 
 const phaseGlows: Record<BreathingPhase, string> = {
@@ -19,6 +20,7 @@ const phaseGlows: Record<BreathingPhase, string> = {
   inhale: 'shadow-[0_0_60px_rgba(110,231,183,0.6)]',
   hold: 'shadow-[0_0_60px_rgba(244,114,182,0.6)]',
   exhale: 'shadow-[0_0_60px_rgba(96,165,250,0.6)]',
+  holdAfterExhale: 'shadow-[0_0_60px_rgba(192,132,252,0.6)]',
 };
 
 export function BreathingCircle({ phase, secondsRemaining, totalSeconds }: BreathingCircleProps) {
@@ -34,6 +36,8 @@ export function BreathingCircle({ phase, secondsRemaining, totalSeconds }: Breat
         return 1.5;
       case 'exhale':
         return 1.5 - (progress * 0.5);
+      case 'holdAfterExhale':
+        return 1;
       default:
         return 1;
     }

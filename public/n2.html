@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>动态自然音效生成器</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; background: #f0f4f8; }
+        button { padding: 15px 30px; font-size: 16px; margin: 10px; cursor: pointer; border-radius: 8px; border: none; background: #2196F3; color: white; }
+        button:hover { background: #1976D2; }
+        .stop { background: #f44336; }
+    </style>
+</head>
+<body>
+    <h2>动态自然音效 (一阵阵的效果)</h2>
+    <button onclick="playOcean()">🌊 阵阵海浪</button>
+    <button onclick="playWind()">🌬️ 阵阵阵风</button>
+    <button class="stop" onclick="stopAll()">🛑 停止所有</button>
+
+    <script>
+        let audioCtx;
+        let activeNodes = [];
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // 生成粉红噪声 (更自然的底噪)
+        function createPinkNoiseBuffer() {
+            const bufferSize = 4 * audioCtx.sampleRate;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = buffer.getChannelData(0);
+            let b0, b1, b2, b3, b4, b5, b6;
+            b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
+            for (let i = 0; i < bufferSize; i++) {
+                let white = Math.random() * 2 - 1;
+                b0 = 0.99886 * b0 + white * 0.0555179;
+                b1 = 0.99332 * b1 + white * 0.0750759;
+                b2 = 0.96900 * b2 + white * 0.1538520;
+                b3 = 0.86650 * b3 + white * 0.3104856;
+                b4 = 0.55000 * b4 + white * 0.5329522;
+                b5 = -0.7616 * b5 - white * 0.0168980;
+                output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+                output[i] *= 0.11; // 修正音量
+                b6 = white * 0.115926;
+            }
+            return buffer;
+        }
+
+        // 🌊 模拟阵阵海浪
+        function playOcean() {
+            stopAll();
+            initAudio();
+
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = createPinkNoiseBuffer();
+            noise.loop = true;
+
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 400;
+
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.value = 0.001;
+
+            // 核心：模拟海浪周期 (约 8 秒一个来回)
+            const now = audioCtx.currentTime;
+            const period = 8;
+            for (let i = 0; i < 100; i++) {
+                const t = now + i * period;
+                // 浪来：音量变大，频率稍微升高（听起来更近）
+                gainNode.gain.exponentialRampToValueAtTime(0.6, t + 3);
+                filter.frequency.exponentialRampToValueAtTime(800, t + 3);
+                // 浪去：音量变小，频率降低（退潮感）
+                gainNode.gain.exponentialRampToValueAtTime(0.01, t + period);
+                filter.frequency.exponentialRampToValueAtTime(300, t + period);
+            }
+
+            noise.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            noise.start();
+            activeNodes.push(noise);
+        }
+
+        // 🌬️ 模拟阵阵阵风
+        function playWind() {
+            stopAll();
+            initAudio();
+
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = createPinkNoiseBuffer();
+            noise.loop = true;
+
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'bandpass'; // 带通滤波器让风声有“呜呜”的共鸣
+            filter.Q.value = 5;       // Q值越高，呼啸感越明显
+
+            const gainNode = audioCtx.createGain();
+
+            // 使用低频振荡器 (LFO) 控制风的起伏
+            const lfo = audioCtx.createOscillator();
+            lfo.type = 'sine';
+            lfo.frequency.value = 0.15; // 风吹的频率：大约 6-7 秒一阵
+
+            const lfoGain = audioCtx.createGain();
+            lfoGain.gain.value = 600; // 风声扫频的范围
+
+            lfo.connect(lfoGain);
+            lfoGain.connect(filter.frequency); // LFO 控制滤波器频率
+            filter.frequency.value = 800;
+
+            // 同时让音量也随风速变化
+            const vcaLfo = audioCtx.createGain();
+            vcaLfo.gain.value = 0.3;
+            lfo.connect(vcaLfo); // 借用同一个 LFO 控制音量
+
+            noise.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            lfo.start();
+            noise.start();
+            activeNodes.push(noise, lfo);
+        }
+
+        function stopAll() {
+            activeNodes.forEach(node => {
+                try { node.stop(); } catch(e) {}
+            });
+            activeNodes = [];
+        }
+    </script>
+</body>
+</html>

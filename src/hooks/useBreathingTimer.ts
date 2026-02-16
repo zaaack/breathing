@@ -11,11 +11,22 @@ export function useBreathingTimer() {
 
     switch (currentPhase) {
       case 'inhale':
-        return { phase: 'hold', duration: settings.holdSeconds };
+        if (settings.holdSeconds > 0) {
+          return { phase: 'hold', duration: settings.holdSeconds };
+        }
+        return { phase: 'exhale', duration: settings.exhaleSeconds };
       case 'hold':
         return { phase: 'exhale', duration: settings.exhaleSeconds };
       case 'exhale':
-        if (settings.totalCycles >0 && currentCycle >= settings.totalCycles) {
+        if (settings.holdAfterExhaleSeconds > 0) {
+          return { phase: 'holdAfterExhale', duration: settings.holdAfterExhaleSeconds };
+        }
+        if (settings.totalCycles > 0 && currentCycle >= settings.totalCycles) {
+          return null;
+        }
+        return { phase: 'inhale', duration: settings.inhaleSeconds };
+      case 'holdAfterExhale':
+        if (settings.totalCycles > 0 && currentCycle >= settings.totalCycles) {
           return null;
         }
         return { phase: 'inhale', duration: settings.inhaleSeconds };
@@ -40,7 +51,7 @@ export function useBreathingTimer() {
         return;
       }
 
-      if (next.phase === 'inhale' && currentState.phase === 'exhale') {
+      if (next.phase === 'inhale' && (currentState.phase === 'exhale' || currentState.phase === 'holdAfterExhale')) {
         breathingStore.setCurrentCycle(currentState.currentCycle + 1);
         if (currentState.settings.soundEnabled) {
           // await audioManager.playCycleComplete();
@@ -57,6 +68,8 @@ export function useBreathingTimer() {
           await audioManager.playHoldTone();
         } else if (next.phase === 'exhale') {
           await audioManager.playExhaleTone();
+        } else if (next.phase === 'holdAfterExhale') {
+          await audioManager.playHoldTone()
         }
       }
     } else {
@@ -84,7 +97,8 @@ export function useBreathingTimer() {
   useEffect(() => {
     if (state.isRunning && state.phase === 'inhale' && state.secondsRemaining === state.settings.inhaleSeconds) {
       if (state.settings.backgroundMusicEnabled) {
-        audioManager.startBackgroundMusic(state.settings.backgroundMusicVolume);
+        const customUrl = state.settings.backgroundMusicType === 'custom' ? state.settings.customMusicUrl : null;
+        audioManager.startBackgroundMusic(state.settings.backgroundMusicVolume, customUrl);
       }
     }
   }, [state.isRunning, state.settings]);
@@ -97,7 +111,8 @@ export function useBreathingTimer() {
       await audioManager.playInhaleTone();
     }
     if (state.settings.backgroundMusicEnabled) {
-      audioManager.startBackgroundMusic(state.settings.backgroundMusicVolume);
+      const customUrl = state.settings.backgroundMusicType === 'custom' ? state.settings.customMusicUrl : null;
+      audioManager.startBackgroundMusic(state.settings.backgroundMusicVolume, customUrl);
     }
   }, [state.settings]);
 
@@ -111,7 +126,8 @@ export function useBreathingTimer() {
         await audioManager.playInhaleTone();
       }
       if (currentState.settings.backgroundMusicEnabled) {
-        audioManager.startBackgroundMusic(currentState.settings.backgroundMusicVolume);
+        const customUrl = currentState.settings.backgroundMusicType === 'custom' ? currentState.settings.customMusicUrl : null;
+        audioManager.startBackgroundMusic(currentState.settings.backgroundMusicVolume, customUrl);
       }
     } else if (currentState.isRunning) {
       breathingStore.setRunning(false);
@@ -119,7 +135,8 @@ export function useBreathingTimer() {
     } else {
       breathingStore.setRunning(true);
       if (currentState.settings.backgroundMusicEnabled) {
-        audioManager.startBackgroundMusic(currentState.settings.backgroundMusicVolume);
+        const customUrl = currentState.settings.backgroundMusicType === 'custom' ? currentState.settings.customMusicUrl : null;
+        audioManager.startBackgroundMusic(currentState.settings.backgroundMusicVolume, customUrl);
       }
     }
   }, [state]);

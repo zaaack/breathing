@@ -2,6 +2,7 @@ class AudioManager {
   private audioContext: AudioContext | null = null;
   private backgroundNode: AudioBufferSourceNode | null = null;
   private backgroundGain: GainNode | null = null;
+  private customAudioElement: HTMLAudioElement | null = null;
   private isInitialized = false;
 
   async init(): Promise<void> {
@@ -90,6 +91,26 @@ class AudioManager {
     oscillator.stop(ctx.currentTime + 0.5);
   }
 
+  async playHoldAfterExhaleTone(): Promise<void> {
+    const ctx = await this.ensureContext();
+    if (!ctx) return;
+
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(330, ctx.currentTime);
+
+    gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.2);
+  }
+
   async playCycleComplete(): Promise<void> {
     const ctx = await this.ensureContext();
     if (!ctx) return;
@@ -116,17 +137,30 @@ class AudioManager {
     });
   }
 
-  async startBackgroundMusic(volume: number = 50): Promise<void> {
+  async startBackgroundMusic(volume: number = 50, customMusicUrl?: string | null): Promise<void> {
     const ctx = await this.ensureContext()
     if (!ctx) return
 
     this.stopBackgroundMusic()
 
+    if (customMusicUrl) {
+      this.customAudioElement = new Audio(customMusicUrl)
+      this.customAudioElement.loop = true
+      this.customAudioElement.volume = (volume / 100) * 0.5
+      
+      try {
+        await this.customAudioElement.play()
+      } catch (error) {
+        console.error('Failed to play custom music:', error)
+      }
+      return
+    }
+
+    // Generate brown noise (softer, more natural)
     const bufferSize = 2 * ctx.sampleRate
     const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
     const output = noiseBuffer.getChannelData(0)
 
-    // Generate brown noise (softer, more natural)
     let lastOut = 0
     for (let i = 0; i < bufferSize; i++) {
       const white = Math.random() * 2 - 1
@@ -158,6 +192,9 @@ class AudioManager {
     if (this.backgroundGain) {
       this.backgroundGain.gain.value = (volume / 100) * 0.3;
     }
+    if (this.customAudioElement) {
+      this.customAudioElement.volume = (volume / 100) * 0.5;
+    }
   }
 
   stopBackgroundMusic(): void {
@@ -169,6 +206,10 @@ class AudioManager {
     if (this.backgroundGain) {
       this.backgroundGain.disconnect();
       this.backgroundGain = null;
+    }
+    if (this.customAudioElement) {
+      this.customAudioElement.pause();
+      this.customAudioElement = null;
     }
   }
 }
