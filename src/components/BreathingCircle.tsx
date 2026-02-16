@@ -31,15 +31,17 @@ export function BreathingCircle({ phase, secondsRemaining, totalSeconds }: Breat
 
     switch (phase) {
       case 'inhale':
-        return 1 + (progress * 0.5);
+        // return 0 + (progress * 1.5);
+        return 1.5;
       case 'hold':
         return 1.5;
       case 'exhale':
-        return 1.5 - (progress * 0.5);
+        // return 1.5 - (progress * 1.5);
+        return 1
       case 'holdAfterExhale':
         return 1;
       default:
-        return 1;
+        return 1.5;
     }
   };
 
@@ -47,25 +49,27 @@ export function BreathingCircle({ phase, secondsRemaining, totalSeconds }: Breat
     <div className="relative flex items-center justify-center">
       <div
         className={cn(
-          'rounded-full transition-all duration-1000 ease-in-out',
+          'rounded-full transition-transform duration-1000 ease-in-out border-2 border-solid',
           phaseColors[phase],
-          phaseGlows[phase],
-          phase !== 'idle' && 'animate-glow'
+          phaseGlows[phase]
+          // phase !== 'idle' && 'animate-glow'
         )}
         style={{
           width: '180px',
           height: '180px',
           transform: `scale(${getScale()})`,
+          transitionDuration: `${totalSeconds}s`,
         }}
       />
       <div
-        className="absolute rounded-full bg-bg/30 backdrop-blur-sm"
+        className={`absolute rounded-full bg-bg/30 backdrop-blur-sm transition-all  ease-in-out`}
         style={{
           width: '160px',
           height: '160px',
           transform: `scale(${getScale()})`,
+          transitionDuration: `${totalSeconds}s`,
         }}
       />
     </div>
-  );
+  )
 }
