@@ -36,7 +36,7 @@ class AudioManager {
   soundVolume = 0.5
   soundType: SoundType = 'breath'
   setSoundVolume(value: number) {
-    this.soundVolume = value
+    this.soundVolume = value/100
   }
   async playBeepSound(stage: 'inhale' | 'hold' | 'exhale', sec: number = 0.5) {
     const audioCtx = await this.ensureContext()
@@ -62,11 +62,12 @@ class AudioManager {
 
     // 修复：使用极短的指数淡入淡出 (Attack/Release)
     gainNode.gain.setValueAtTime(0.0001, now)
+    const volume = this.soundVolume * 0.8
     gainNode.gain.exponentialRampToValueAtTime(
-      this.soundVolume * 0.3,
+      volume,
       now + 0.1
     )
-    gainNode.gain.setValueAtTime(this.soundVolume * 0.3, now + sec - 0.1)
+    gainNode.gain.setValueAtTime(volume, now + sec - 0.1)
     gainNode.gain.exponentialRampToValueAtTime(0.0001, now + sec)
 
     oscillator.start()
@@ -96,6 +97,11 @@ class AudioManager {
     }, duration)
   }
 
+  /**
+   *
+   * @param duration 单位秒
+   * @returns
+   */
   async playInhaleTone(duration: number): Promise<void> {
     if (this.soundType === 'beep') return this.playBeepSound('inhale', )
 
@@ -122,15 +128,15 @@ class AudioManager {
 
     // 3. 频率包络：吸气时频率逐渐升高，模拟吸入感
     filter.frequency.setValueAtTime(400, now)
-    filter.frequency.exponentialRampToValueAtTime(1000, now + duration)
+    // filter.frequency.exponentialRampToValueAtTime(1000, now + duration)
 
     // 4. 音量包络：使用指数级淡入淡出，彻底消除“刺耳”感
     gainNode.gain.setValueAtTime(0.0001, now)
-    gainNode.gain.exponentialRampToValueAtTime(
-      this.soundVolume * 0.4,
-      now + duration * 0.7
-    )
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration)
+    const volume = this.soundVolume * 0.8
+
+    gainNode.gain.linearRampToValueAtTime(volume, now + 1)
+    gainNode.gain.linearRampToValueAtTime(volume, now + duration - 1)
+    gainNode.gain.linearRampToValueAtTime(0.0001, now + duration)
 
     source.start(now)
     source.stop(now + duration)
@@ -159,16 +165,15 @@ class AudioManager {
     const now = ctx.currentTime
 
     // 频率包络：呼气时频率迅速由高转低，模拟放松感
-    filter.frequency.setValueAtTime(900, now)
-    filter.frequency.exponentialRampToValueAtTime(300, now + duration)
+    filter.frequency.setValueAtTime(300, now)
+    // filter.frequency.exponentialRampToValueAtTime(300, now + duration)
+    const volume = this.soundVolume * 0.8
 
     // 音量包络：呼气开始时较快达到峰值，然后缓缓衰减
     gainNode.gain.setValueAtTime(0.0001, now)
-    gainNode.gain.exponentialRampToValueAtTime(
-      this.soundVolume * 0.5,
-      now + duration * 0.2
-    )
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration)
+    gainNode.gain.linearRampToValueAtTime(volume, now + 1)
+    gainNode.gain.linearRampToValueAtTime(volume, now + duration - 1)
+    gainNode.gain.linearRampToValueAtTime(0.0001, now + duration)
 
     source.start(now)
     source.stop(now + duration)

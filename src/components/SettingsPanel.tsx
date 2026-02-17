@@ -360,7 +360,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                 {/* Volume Slider */}
                 <div className="space-y-2 pt-2  pl-6">
                   <div className="flex justify-between text-xs">
-                    <span className="text-text-secondary">Music Volume</span>
+                    <span className="text-text-secondary">Sound Volume</span>
                     <span className="text-text">{settings.soundVolume}%</span>
                   </div>
                   <Slider
