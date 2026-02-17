@@ -1,5 +1,5 @@
 import { X, Volume2, Music, Clock, Repeat, Plus, Trash2, FileAudio, Disc, ChevronDown, ChevronUp } from 'lucide-react';
-import { breathingStore, builtInPatterns, type BreathingSettings, type BreathingPattern, type BackgroundMusicType } from '@/store/breathingStore';
+import { breathingStore, builtInPatterns, type BreathingSettings, type BreathingPattern, type BackgroundMusicType, type SoundType } from '@/store/breathingStore';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
@@ -38,17 +38,6 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
 
   const handleSettingChange = (key: keyof BreathingSettings, value: number | boolean | string) => {
     breathingStore.updateSettings({ [key]: value });
-    if (key === 'backgroundMusicVolume') {
-      audioManager.setBackgroundVolume(value as number);
-    }
-    if (key ===  "soundVolume") {
-      audioManager.setSoundVolume(value as number);
-    }
-    // Play immediately when background music type changes and music is enabled
-    if (key === 'backgroundMusicType' && settings.backgroundMusicEnabled) {
-      const customUrl = (value as string) === 'custom' ? settings.customMusicUrl : null;
-      audioManager.startBackgroundMusic(settings.backgroundMusicVolume, value as BackgroundMusicType, customUrl);
-    }
   };
 
   const handlePatternSelect = (pattern: BreathingPattern) => {

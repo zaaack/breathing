@@ -1,15 +1,21 @@
-import { LocalStore } from 'nstate';
+import { audioManager } from '@/lib/audio'
+import { LocalStore } from 'nstate'
 
-export type BreathingPhase = 'idle' | 'inhale' | 'hold' | 'exhale' | 'holdAfterExhale';
+export type BreathingPhase =
+  | 'idle'
+  | 'inhale'
+  | 'hold'
+  | 'exhale'
+  | 'holdAfterExhale'
 
 export interface BreathingPattern {
-  id: string;
-  name: string;
-  inhaleSeconds: number;
-  holdSeconds: number;
-  exhaleSeconds: number;
-  holdAfterExhaleSeconds: number;
-  isBuiltIn?: boolean;
+  id: string
+  name: string
+  inhaleSeconds: number
+  holdSeconds: number
+  exhaleSeconds: number
+  holdAfterExhaleSeconds: number
+  isBuiltIn?: boolean
 }
 
 export const builtInPatterns: BreathingPattern[] = [
@@ -69,8 +75,16 @@ export const builtInPatterns: BreathingPattern[] = [
   },
 ]
 
-export type BackgroundMusicType = 'whiteNoise' | 'ocean' | 'wind' | 'rain' | 'fire' | 'windLight' | 'sea' | 'custom';
-export type SoundType = 'beep' | 'breath';
+export type BackgroundMusicType =
+  | 'whiteNoise'
+  | 'ocean'
+  | 'wind'
+  | 'rain'
+  | 'fire'
+  | 'windLight'
+  | 'sea'
+  | 'custom'
+export type SoundType = 'beep' | 'breath'
 export interface BreathingSettings {
   inhaleSeconds: number
   holdSeconds: number
@@ -89,12 +103,12 @@ export interface BreathingSettings {
 }
 
 export interface BreathingState {
-  phase: BreathingPhase;
-  isRunning: boolean;
-  currentCycle: number;
-  secondsRemaining: number;
-  totalSecondsRemaining: number;
-  settings: BreathingSettings;
+  phase: BreathingPhase
+  isRunning: boolean
+  currentCycle: number
+  secondsRemaining: number
+  totalSecondsRemaining: number
+  settings: BreathingSettings
 }
 
 const defaultSettings: BreathingSettings = {
@@ -121,37 +135,61 @@ export const initialState: BreathingState = {
   secondsRemaining: 0,
   totalSecondsRemaining: 0,
   settings: defaultSettings,
-};
+}
 
 class BreathingStore extends LocalStore<BreathingState> {
   constructor() {
-    super(initialState, 'breathing');
+    super(initialState, 'breathing')
   }
 
   setPhase(phase: BreathingPhase) {
-    this.setState({ phase });
+    this.setState({ phase })
   }
 
   setRunning(isRunning: boolean) {
-    this.setState({ isRunning });
+    this.setState({ isRunning })
   }
 
   setCurrentCycle(currentCycle: number) {
-    this.setState({ currentCycle });
+    this.setState({ currentCycle })
   }
 
   setSecondsRemaining(secondsRemaining: number) {
-    this.setState({ secondsRemaining });
+    this.setState({ secondsRemaining })
   }
 
   setTotalSecondsRemaining(totalSecondsRemaining: number) {
-    this.setState({ totalSecondsRemaining });
+    this.setState({ totalSecondsRemaining })
   }
 
   updateSettings(settings: Partial<BreathingSettings>) {
+    if (settings.soundVolume !== undefined) {
+      audioManager.setSoundVolume(settings.soundVolume)
+    }
+    if (settings.soundType === 'breath') {
+      settings.backgroundMusicEnabled = false
+    }
+    if (settings.backgroundMusicVolume !== undefined) {
+      audioManager.setBackgroundVolume(settings.backgroundMusicVolume)
+    }
+    // Play immediately when background music type changes and music is enabled
+    if (
+      settings.backgroundMusicType &&
+      this.state.settings.backgroundMusicEnabled
+    ) {
+      const customUrl =
+        settings.backgroundMusicType === 'custom'
+          ? settings.customMusicUrl
+          : null
+      audioManager.startBackgroundMusic(
+        settings.backgroundMusicVolume,
+        settings.backgroundMusicType,
+        customUrl
+      )
+    }
     this.setState((state) => ({
       settings: { ...state.settings, ...settings },
-    }));
+    }))
   }
 
   applyPattern(pattern: BreathingPattern) {
@@ -164,7 +202,7 @@ class BreathingStore extends LocalStore<BreathingState> {
         holdAfterExhaleSeconds: pattern.holdAfterExhaleSeconds,
         currentPatternId: pattern.id,
       },
-    }));
+    }))
   }
 
   addCustomPattern(pattern: BreathingPattern) {
@@ -173,16 +211,18 @@ class BreathingStore extends LocalStore<BreathingState> {
         ...state.settings,
         customPatterns: [...state.settings.customPatterns, pattern],
       },
-    }));
+    }))
   }
 
   removeCustomPattern(patternId: string) {
     this.setState((state) => ({
       settings: {
         ...state.settings,
-        customPatterns: state.settings.customPatterns.filter(p => p.id !== patternId),
+        customPatterns: state.settings.customPatterns.filter(
+          (p) => p.id !== patternId
+        ),
       },
-    }));
+    }))
   }
 
   setCustomMusicUrl(url: string | null) {
@@ -191,7 +231,7 @@ class BreathingStore extends LocalStore<BreathingState> {
         ...state.settings,
         customMusicUrl: url,
       },
-    }));
+    }))
   }
 
   reset() {
@@ -201,34 +241,35 @@ class BreathingStore extends LocalStore<BreathingState> {
       currentCycle: 0,
       secondsRemaining: 0,
       totalSecondsRemaining: 0,
-    });
+    })
   }
 
   start() {
     this.setState((state) => {
-      const totalSeconds = state.settings.totalMinutes > 0 ? state.settings.totalMinutes * 60 : 0;
+      const totalSeconds =
+        state.settings.totalMinutes > 0 ? state.settings.totalMinutes * 60 : 0
       return {
         isRunning: true,
         currentCycle: state.currentCycle || 1,
         phase: 'inhale',
         secondsRemaining: state.settings.inhaleSeconds,
         totalSecondsRemaining: totalSeconds,
-      };
-    });
+      }
+    })
   }
 
   toggle() {
-    const { isRunning, phase } = this.state;
+    const { isRunning, phase } = this.state
     if (isRunning) {
-      this.setRunning(false);
+      this.setRunning(false)
     } else {
       if (phase === 'idle') {
-        this.start();
+        this.start()
       } else {
-        this.setRunning(true);
+        this.setRunning(true)
       }
     }
   }
 }
 
-export const breathingStore = new BreathingStore();
+export const breathingStore = new BreathingStore()
