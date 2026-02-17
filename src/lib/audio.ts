@@ -97,6 +97,12 @@ class AudioManager {
     }, duration)
   }
 
+  get toneVolume() {
+    return this.soundVolume * 0.8
+  }
+
+  toneFadeTime = 0.7
+
   /**
    *
    * @param duration 单位秒
@@ -132,11 +138,16 @@ class AudioManager {
 
     // 4. 音量包络：使用指数级淡入淡出，彻底消除“刺耳”感
     gainNode.gain.setValueAtTime(0.0001, now)
-    const volume = this.soundVolume * 0.8
 
-    gainNode.gain.linearRampToValueAtTime(volume, now + 1)
-    gainNode.gain.linearRampToValueAtTime(volume, now + duration - 1)
-    gainNode.gain.linearRampToValueAtTime(0.0001, now + duration)
+    gainNode.gain.exponentialRampToValueAtTime(
+      this.toneVolume,
+      now + this.toneFadeTime
+    )
+    gainNode.gain.exponentialRampToValueAtTime(
+      this.toneVolume,
+      now + duration - this.toneFadeTime
+    )
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration)
 
     source.start(now)
     source.stop(now + duration)
@@ -171,9 +182,12 @@ class AudioManager {
 
     // 音量包络：呼气开始时较快达到峰值，然后缓缓衰减
     gainNode.gain.setValueAtTime(0.0001, now)
-    gainNode.gain.linearRampToValueAtTime(volume, now + 1)
-    gainNode.gain.linearRampToValueAtTime(volume, now + duration - 1)
-    gainNode.gain.linearRampToValueAtTime(0.0001, now + duration)
+    gainNode.gain.exponentialRampToValueAtTime(volume, now + this.toneFadeTime)
+    gainNode.gain.exponentialRampToValueAtTime(
+      volume,
+      now + duration - this.toneFadeTime
+    )
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration)
 
     source.start(now)
     source.stop(now + duration)
