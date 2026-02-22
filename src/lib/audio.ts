@@ -62,7 +62,7 @@ class AudioManager {
 
     // 修复：使用极短的指数淡入淡出 (Attack/Release)
     gainNode.gain.setValueAtTime(0.0001, now)
-    const volume = this.soundVolume * 0.8
+    const volume = this.soundVolume
     gainNode.gain.exponentialRampToValueAtTime(
       volume,
       now + 0.1
@@ -98,7 +98,7 @@ class AudioManager {
   }
 
   get toneVolume() {
-    return this.soundVolume * 0.8
+    return this.soundVolume * 1.5
   }
 
   toneFadeTime = 0.7
@@ -325,6 +325,7 @@ class AudioManager {
     b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0
     for (let i = 0; i < bufferSize; i++) {
       const white = Math.random() * 2 - 1
+
       b0 = 0.99886 * b0 + white * 0.0555179
       b1 = 0.99332 * b1 + white * 0.0750759
       b2 = 0.969 * b2 + white * 0.153852
@@ -333,6 +334,7 @@ class AudioManager {
       b5 = -0.7616 * b5 - white * 0.016898
       output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362
       output[i] *= 0.11
+      output[i] = Math.max(-1, Math.min(1, output[i])) // 强制限制在 [-1, 1]
       b6 = white * 0.115926
     }
     return buffer
