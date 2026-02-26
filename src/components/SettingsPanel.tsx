@@ -134,8 +134,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                     >
                       <div className="font-medium truncate">{pattern.name}</div>
                       <div className="text-xs opacity-70">
-                        {pattern.inhaleSeconds}-{pattern.holdSeconds}-
-                        {pattern.exhaleSeconds}-{pattern.holdAfterExhaleSeconds}
+                        {pattern.inhaleSeconds % 1 === 0 ? pattern.inhaleSeconds : pattern.inhaleSeconds.toFixed(1)}-
+                        {pattern.holdSeconds % 1 === 0 ? pattern.holdSeconds : pattern.holdSeconds.toFixed(1)}-
+                        {pattern.exhaleSeconds % 1 === 0 ? pattern.exhaleSeconds : pattern.exhaleSeconds.toFixed(1)}-
+                        {pattern.holdAfterExhaleSeconds % 1 === 0 ? pattern.holdAfterExhaleSeconds : pattern.holdAfterExhaleSeconds.toFixed(1)}
                       </div>
                     </button>
                   ))}
@@ -170,6 +172,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                             <input
                               type="number"
                               min={key.includes('hold') ? '0' : '1'}
+                              step="0.1"
                               value={
                                 customPatternValues[
                                   key as keyof typeof customPatternValues
@@ -178,7 +181,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                               onChange={(e) =>
                                 setCustomPatternValues((v) => ({
                                   ...v,
-                                  [key]: parseInt(e.target.value) || 0,
+                                  [key]: parseFloat(e.target.value) || 0,
                                 }))
                               }
                               className="w-full px-2 py-1 bg-white/10 rounded text-text border border-white/10"
@@ -269,7 +272,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                   <div className="flex justify-between text-sm">
                     <span className="text-text-secondary">{item.label}</span>
                     <span className={`${item.color} font-medium`}>
-                      {settings[item.key]}s
+                      {settings[item.key] % 1 === 0 ? settings[item.key] : (settings[item.key] as number).toFixed(1)}s
                     </span>
                   </div>
                   <Slider
@@ -284,7 +287,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                     }
                     min={item.label.includes('Hold') ? 0 : 1}
                     max={20}
-                    step={1}
+                    step={0.5}
                   />
                 </div>
               ))}

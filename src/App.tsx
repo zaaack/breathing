@@ -89,7 +89,7 @@ function App() {
               {phaseLabels[phase]}
               {phase !== 'idle' && (
                 <div className="text-7xl md:text-8xl font-bold text-text tabular-nums">
-                  {secondsRemaining}
+                  {secondsRemaining.toFixed(0)}
                 </div>
               )}
             </div>
@@ -98,7 +98,7 @@ function App() {
           {phase !== 'idle' && (
             <div className="text-text-secondary pt-8">
               {settings.totalMinutes > 0 ? (
-                <>Time remaining: {Math.floor(totalSecondsRemaining / 60)}:{String(totalSecondsRemaining % 60).padStart(2, '0')}</>
+                <>Time remaining: {Math.floor(totalSecondsRemaining / 60)}:{(totalSecondsRemaining % 60).toFixed(0).padStart(2, '0')}</>
               ) : (
                 <>Cycle {currentCycle}</>
               )}
@@ -129,7 +129,10 @@ function App() {
 
       <footer className="p-6 text-center text-text-secondary text-sm">
         <p>
-          {settings.inhaleSeconds}-{settings.holdSeconds}-{settings.exhaleSeconds}-{settings.holdAfterExhaleSeconds} Breathing
+          {settings.inhaleSeconds % 1 === 0 ? settings.inhaleSeconds : settings.inhaleSeconds.toFixed(1)}-
+          {settings.holdSeconds % 1 === 0 ? settings.holdSeconds : settings.holdSeconds.toFixed(1)}-
+          {settings.exhaleSeconds % 1 === 0 ? settings.exhaleSeconds : settings.exhaleSeconds.toFixed(1)}-
+          {settings.holdAfterExhaleSeconds % 1 === 0 ? settings.holdAfterExhaleSeconds : settings.holdAfterExhaleSeconds.toFixed(1)} Breathing
         </p>
       </footer>
 

@@ -45,7 +45,7 @@ export function useBreathingTimer() {
 
     // Decrement total seconds remaining for countdown
     if (currentState.settings.totalMinutes > 0) {
-      const newTotalSeconds = currentState.totalSecondsRemaining - 1;
+      const newTotalSeconds = currentState.totalSecondsRemaining - 0.1;
       if (newTotalSeconds <= 0) {
         breathingStore.reset();
         audioManager.stopBackgroundMusic();
@@ -54,7 +54,7 @@ export function useBreathingTimer() {
       breathingStore.setTotalSecondsRemaining(newTotalSeconds);
     }
 
-    const newSecondsRemaining = currentState.secondsRemaining - 1;
+    const newSecondsRemaining = currentState.secondsRemaining - 0.1;
 
     if (newSecondsRemaining <= 0) {
       const next = getNextPhase(currentState.phase);
@@ -102,7 +102,7 @@ export function useBreathingTimer() {
       timerRef.current = null
     }
     if (state.isRunning && state.phase !== 'idle') {
-      timerRef.current = setInterval(tick, 1000);
+      timerRef.current = setInterval(tick, 100);
     }
 
     return () => {
