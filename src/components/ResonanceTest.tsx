@@ -1,7 +1,8 @@
 import { X, Play, Pause, ChevronRight, Star, CheckCircle } from 'lucide-react';
 import { breathingStore, resonanceTestFrequencies } from '@/store/breathingStore';
 import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
+import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
 import { useState, useEffect } from 'react';
 import { audioManager } from '@/lib/audio';
 import { cn } from '@/lib/utils';
@@ -18,7 +19,8 @@ export function ResonanceTest({ isOpen, onClose }: ResonanceTestProps) {
   const state = breathingStore.useState();
   const { resonanceTest, settings, phase, isRunning, secondsRemaining, totalSecondsRemaining } = state;
   const [testPhase, setTestPhase] = useState<TestPhase>('intro');
-  const [testDuration, setTestDuration] = useState(2);
+  const [testDuration, setTestDuration] = useState(2)
+  const [skipRating, setSkipRating] = useState(true)
 
   const currentFrequency = resonanceTestFrequencies[resonanceTest.currentFrequencyIndex];
 
@@ -199,6 +201,13 @@ export function ResonanceTest({ isOpen, onClose }: ResonanceTestProps) {
               <p className="text-xs text-text-secondary">
                 Total test time: {testDuration * 6} minutes
               </p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-text-secondary pr-5">Skip rating</span>
+              <Switch checked={skipRating} onCheckedChange={setSkipRating} />
+              </div>
             </div>
 
             <div className="bg-white/5 rounded-lg p-4">
