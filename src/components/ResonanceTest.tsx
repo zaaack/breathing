@@ -26,9 +26,11 @@ export function ResonanceTest({ isOpen, onClose }: ResonanceTestProps) {
 
   // 监听 totalSecondsRemaining，当接近 0 时进入评分阶段
   useEffect(() => {
-    if (resonanceTest.isActive && isRunning && totalSecondsRemaining <= 0) {
+    if (resonanceTest.isActive && totalSecondsRemaining <= 0) {
       setTestPhase('rating');
-      handleNextFrequency()
+      if (skipRating) {
+        handleNextFrequency()
+      }
     }
   }, [resonanceTest.isActive, isRunning, totalSecondsRemaining]);
 
@@ -53,11 +55,8 @@ export function ResonanceTest({ isOpen, onClose }: ResonanceTestProps) {
     setTestPhase('testing');
 
     // 开始呼吸
-    breathingStore.start();
+    await breathingStore.start();
 
-    if (settings.soundEnabled) {
-      await audioManager.playInhaleTone(freq.inhaleSeconds);
-    }
   };
 
   const handleTogglePause = () => {
@@ -98,13 +97,10 @@ export function ResonanceTest({ isOpen, onClose }: ResonanceTestProps) {
     breathingStore.nextResonanceTestFrequency();
 
     // 开始呼吸
-    breathingStore.start();
+    await breathingStore.start();
 
     setTestPhase('testing');
 
-    if (settings.soundEnabled) {
-      await audioManager.playInhaleTone(nextFreq.inhaleSeconds);
-    }
   };
 
   const handleCancel = () => {
@@ -194,9 +190,9 @@ export function ResonanceTest({ isOpen, onClose }: ResonanceTestProps) {
               <Slider
                 value={[testDuration]}
                 onValueChange={([val]) => setTestDuration(val)}
-                min={1}
-                max={5}
-                step={1}
+                min={0.5}
+                max={10}
+                step={0.5}
               />
               <p className="text-xs text-text-secondary">
                 Total test time: {testDuration * 6} minutes

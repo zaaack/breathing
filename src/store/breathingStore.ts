@@ -284,7 +284,7 @@ class BreathingStore extends LocalStore<BreathingState> {
     })
   }
 
-  start() {
+  async start() {
     this.setState((state) => {
       const totalSeconds =
         state.settings.totalMinutes > 0 ? state.settings.totalMinutes * 60 : 0
@@ -296,6 +296,11 @@ class BreathingStore extends LocalStore<BreathingState> {
         totalSecondsRemaining: totalSeconds,
       }
     })
+
+      if (this.state.settings.soundEnabled) {
+        audioManager.soundType = this.state.settings.soundType
+        await audioManager.playInhaleTone(this.state.settings.inhaleSeconds)
+      }
   }
 
   toggle() {

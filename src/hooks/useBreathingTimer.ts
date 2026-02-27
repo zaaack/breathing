@@ -131,10 +131,6 @@ export function useBreathingTimer() {
     await audioManager.init();
     breathingStore.start();
 
-    if (state.settings.soundEnabled) {
-        audioManager.soundType = state.settings.soundType
-        await audioManager.playInhaleTone(state.settings.inhaleSeconds)
-    }
     if (state.settings.backgroundMusicEnabled) {
       const customUrl = state.settings.backgroundMusicType === 'custom' ? state.settings.customMusicUrl : null;
       audioManager.startBackgroundMusic(state.settings.backgroundMusicVolume, state.settings.backgroundMusicType, customUrl);
@@ -147,12 +143,6 @@ export function useBreathingTimer() {
 
     if (!currentState.isRunning && currentState.phase === 'idle') {
       breathingStore.start();
-      if (currentState.settings.soundEnabled) {
-        audioManager.soundType = state.settings.soundType;
-        await audioManager.playInhaleTone(
-          state.settings.inhaleSeconds,
-        )
-      }
       if (currentState.settings.backgroundMusicEnabled) {
         const customUrl = currentState.settings.backgroundMusicType === 'custom' ? currentState.settings.customMusicUrl : null;
         audioManager.startBackgroundMusic(currentState.settings.backgroundMusicVolume, currentState.settings.backgroundMusicType, customUrl);
