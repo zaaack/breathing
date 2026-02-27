@@ -26,6 +26,7 @@ export function ResonanceTest({ isOpen, onClose }: ResonanceTestProps) {
   useEffect(() => {
     if (resonanceTest.isActive && isRunning && totalSecondsRemaining <= 0) {
       setTestPhase('rating');
+      handleNextFrequency()
     }
   }, [resonanceTest.isActive, isRunning, totalSecondsRemaining]);
 

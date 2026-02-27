@@ -98,7 +98,12 @@ class AudioManager {
   }
 
   get toneVolume() {
-    return this.soundVolume * 1.5
+    const x = this.soundVolume
+
+    // 公式: 3 * x^2.585
+    const newVolume = 3 * Math.pow(x, 3)
+
+    return Math.max(0, Math.min(newVolume, 3))
   }
 
   toneFadeTime = 0.7
@@ -178,7 +183,7 @@ class AudioManager {
     // 频率包络：呼气时频率迅速由高转低，模拟放松感
     filter.frequency.setValueAtTime(300, now)
     // filter.frequency.exponentialRampToValueAtTime(300, now + duration)
-    const volume = this.soundVolume * 0.8
+    const volume = this.toneVolume
 
     // 音量包络：呼气开始时较快达到峰值，然后缓缓衰减
     gainNode.gain.setValueAtTime(0.0001, now)
