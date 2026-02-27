@@ -131,30 +131,60 @@ const defaultSettings: BreathingSettings = {
 
 // 共振频率测试相关类型
 export interface ResonanceTestFrequency {
-  breathsPerMinute: number;
-  cycleSeconds: number;
-  inhaleSeconds: number;
-  exhaleSeconds: number;
+  breathsPerMinute: number
+  cycleSeconds: number
+  inhaleSeconds: number
+  exhaleSeconds: number
 }
 
 // 预定义的测试频率（Lehrer法）
 export const resonanceTestFrequencies: ResonanceTestFrequency[] = [
-  { breathsPerMinute: 7.0, cycleSeconds: 8.57, inhaleSeconds: 4.3, exhaleSeconds: 4.3 },
-  { breathsPerMinute: 6.5, cycleSeconds: 9.23, inhaleSeconds: 4.6, exhaleSeconds: 4.6 },
-  { breathsPerMinute: 6.0, cycleSeconds: 10, inhaleSeconds: 5, exhaleSeconds: 5 },
-  { breathsPerMinute: 5.5, cycleSeconds: 10.9, inhaleSeconds: 5.5, exhaleSeconds: 5.5 },
-  { breathsPerMinute: 5.0, cycleSeconds: 12, inhaleSeconds: 6, exhaleSeconds: 6 },
-  { breathsPerMinute: 4.5, cycleSeconds: 13.3, inhaleSeconds: 6.65, exhaleSeconds: 6.65 },
+  {
+    breathsPerMinute: 7.0,
+    cycleSeconds: 8.57,
+    inhaleSeconds: 4.3,
+    exhaleSeconds: 4.3,
+  },
+  {
+    breathsPerMinute: 6.5,
+    cycleSeconds: 9.23,
+    inhaleSeconds: 4.6,
+    exhaleSeconds: 4.6,
+  },
+  {
+    breathsPerMinute: 6.0,
+    cycleSeconds: 10,
+    inhaleSeconds: 5,
+    exhaleSeconds: 5,
+  },
+  {
+    breathsPerMinute: 5.5,
+    cycleSeconds: 10.9,
+    inhaleSeconds: 5.5,
+    exhaleSeconds: 5.5,
+  },
+  {
+    breathsPerMinute: 5.0,
+    cycleSeconds: 12,
+    inhaleSeconds: 6,
+    exhaleSeconds: 6,
+  },
+  {
+    breathsPerMinute: 4.5,
+    cycleSeconds: 13.3,
+    inhaleSeconds: 6.65,
+    exhaleSeconds: 6.65,
+  },
 ]
 
 export interface ResonanceTestState {
-  isActive: boolean;
-  currentFrequencyIndex: number;
-  testDurationPerFrequency: number; // 每档测试时长（分钟）
-  secondsRemainingInPhase: number; // 当前频率档剩余时间
-  ratings: (number | null)[]; // 每个频率档的评分 (1-5)
-  isCompleted: boolean;
-  resonantFrequency: ResonanceTestFrequency | null; // 测定结果
+  isActive: boolean
+  currentFrequencyIndex: number
+  testDurationPerFrequency: number // 每档测试时长（分钟）
+  secondsRemainingInPhase: number // 当前频率档剩余时间
+  ratings: (number | null)[] // 每个频率档的评分 (1-5)
+  isCompleted: boolean
+  resonantFrequency: ResonanceTestFrequency | null // 测定结果
 }
 
 export const initialResonanceTestState: ResonanceTestState = {
@@ -297,10 +327,10 @@ class BreathingStore extends LocalStore<BreathingState> {
       }
     })
 
-      if (this.state.settings.soundEnabled) {
-        audioManager.soundType = this.state.settings.soundType
-        await audioManager.playInhaleTone(this.state.settings.inhaleSeconds)
-      }
+    if (this.state.settings.soundEnabled) {
+      audioManager.soundType = this.state.settings.soundType
+      await audioManager.playInhaleTone(this.state.settings.inhaleSeconds)
+    }
   }
 
   toggle() {
