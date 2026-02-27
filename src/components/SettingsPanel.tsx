@@ -1,4 +1,4 @@
-import { X, Volume2, Music, Clock, Repeat, Plus, Trash2, FileAudio, Disc, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Volume2, Music, Clock, Repeat, Plus, Trash2, FileAudio, Disc, ChevronDown, ChevronUp, Activity } from 'lucide-react';
 import { breathingStore, builtInPatterns, type BreathingSettings, type BreathingPattern, type BackgroundMusicType, type SoundType } from '@/store/breathingStore';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -9,6 +9,7 @@ import { useState, useRef } from 'react';
 interface SettingsPanelProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenResonanceTest: () => void;
 }
 
 // Background music options with labels and icons
@@ -22,7 +23,7 @@ const backgroundMusicOptions: { type: BackgroundMusicType; label: string; icon: 
   { type: 'whiteNoise', label: '📻 White Noise', icon: '📻' },
 ];
 
-export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
+export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: SettingsPanelProps) {
   const settings = breathingStore.useState((state: { settings: BreathingSettings }) => state.settings);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -95,6 +96,19 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             <X className="w-5 h-5" />
           </Button>
         </div>
+
+        {/* Resonance Frequency Test Button */}
+        <Button
+          variant="outline"
+          className="w-full mb-6 border-primary/30 hover:bg-primary/10 hover:border-primary/50"
+          onClick={() => {
+            onClose();
+            onOpenResonanceTest();
+          }}
+        >
+          <Activity className="w-4 h-4 mr-2 text-primary" />
+          <span className="text-primary">Find Your Resonance Frequency</span>
+        </Button>
 
         <div className="space-y-6">
           {/* --- Breathing Pattern Accordion --- */}

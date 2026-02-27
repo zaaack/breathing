@@ -5,6 +5,7 @@ interface BreathingCircleProps {
   phase: BreathingPhase;
   secondsRemaining: number;
   totalSeconds: number;
+  size?: number;
 }
 
 const phaseColors: Record<BreathingPhase, string> = {
@@ -32,7 +33,14 @@ const phaseGlows: Record<BreathingPhase, string> = {
   holdAfterExhale: 'shadow-[0_0_60px_rgba(192,132,252,0.6)]',
 };
 
-export function BreathingCircle({ phase, secondsRemaining, totalSeconds }: BreathingCircleProps) {
+const phaseLabels: Record<string, string> = {
+  idle: 'Ready',
+  inhale: 'Inhale',
+  hold: 'Hold',
+  exhale: 'Exhale',
+  holdAfterExhale: 'Hold',
+}
+export function BreathingCircle({ phase, secondsRemaining, totalSeconds, size = 200 }: BreathingCircleProps) {
   const getScale = () => {
     if (phase === 'idle' || totalSeconds === 0) return 0.3;
     const max = 1;
@@ -64,8 +72,8 @@ export function BreathingCircle({ phase, secondsRemaining, totalSeconds }: Breat
           // phase !== 'idle' && 'animate-glow'
         )}
         style={{
-          width: '200px',
-          height: '200px',
+          width: size,
+          height: size,
           // transform: `scale(${getScale()})`,
           // transitionDuration: `${totalSeconds}s`,
         }}
@@ -76,13 +84,31 @@ export function BreathingCircle({ phase, secondsRemaining, totalSeconds }: Breat
           phaseColors[phase]
         )}
         style={{
-          width: '200px',
-          height: '200px',
+          width: size,
+          height: size,
           transform: `scale(${getScale()})`,
           transitionDuration: `${totalSeconds}s`,
         }}
       >
         <div className={cn('w-full h-full bg-bg/30 ')} />
+      </div>
+
+      <div
+        className={cn(
+          'text-3xl md:text-4xl font-semibold transition-colors duration-300 absolute left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 text-center',
+          phase === 'inhale' && 'text-primary',
+          phase === 'hold' && 'text-secondary',
+          phase === 'exhale' && 'text-accent',
+          phase === 'holdAfterExhale' && 'text-purple-400',
+          phase === 'idle' && 'text-text'
+        )}
+      >
+        {phaseLabels[phase]}
+        {phase !== 'idle' && (
+          <div className="text-3xl md:text-4xl font-bold text-text tabular-nums">
+            {secondsRemaining.toFixed(0)}
+          </div>
+        )}
       </div>
     </div>
   )

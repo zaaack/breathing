@@ -2,38 +2,19 @@ import { useState, useEffect } from 'react';
 import { Settings, Play, Pause, RotateCcw } from 'lucide-react';
 import { BreathingCircle } from '@/components/BreathingCircle';
 import { SettingsPanel } from '@/components/SettingsPanel';
+import { ResonanceTest } from '@/components/ResonanceTest';
 import { Button } from '@/components/ui/button';
 import { useBreathingTimer } from '@/hooks/useBreathingTimer';
 import { breathingStore } from '@/store/breathingStore';
 import { loadSettings, saveSettings } from '@/lib/storage';
 import { cn } from '@/lib/utils';
 
-const phaseLabels: Record<string, string> = {
-  idle: 'Ready',
-  inhale: 'Inhale',
-  hold: 'Hold',
-  exhale: 'Exhale',
-  holdAfterExhale: 'Hold',
-};
 
 function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [resonanceTestOpen, setResonanceTestOpen] = useState(false);
   const { phase, isRunning, currentCycle, secondsRemaining, totalSecondsRemaining, toggle, reset, settings } = useBreathingTimer();
 
-  const getTotalSeconds = () => {
-    switch (phase) {
-      case 'inhale':
-        return settings.inhaleSeconds;
-      case 'hold':
-        return settings.holdSeconds;
-      case 'exhale':
-        return settings.exhaleSeconds;
-      case 'holdAfterExhale':
-        return settings.holdAfterExhaleSeconds;
-      default:
-        return 0;
-    }
-  };
 
   const [inited, setInited] = useState(false);
 
@@ -73,26 +54,9 @@ function App() {
             <BreathingCircle
               phase={phase}
               secondsRemaining={secondsRemaining}
-              totalSeconds={getTotalSeconds()}
+              totalSeconds={breathingStore.getTotalSeconds()}
             />
 
-            <div
-              className={cn(
-                'text-4xl md:text-5xl font-semibold transition-colors duration-300 absolute left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2',
-                phase === 'inhale' && 'text-primary',
-                phase === 'hold' && 'text-secondary',
-                phase === 'exhale' && 'text-accent',
-                phase === 'holdAfterExhale' && 'text-purple-400',
-                phase === 'idle' && 'text-text'
-              )}
-            >
-              {phaseLabels[phase]}
-              {phase !== 'idle' && (
-                <div className="text-7xl md:text-8xl font-bold text-text tabular-nums">
-                  {secondsRemaining.toFixed(0)}
-                </div>
-              )}
-            </div>
           </div>
 
           {phase !== 'idle' && (
@@ -139,6 +103,12 @@ function App() {
       <SettingsPanel
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
+        onOpenResonanceTest={() => setResonanceTestOpen(true)}
+      />
+
+      <ResonanceTest
+        isOpen={resonanceTestOpen}
+        onClose={() => setResonanceTestOpen(false)}
       />
     </div>
   )

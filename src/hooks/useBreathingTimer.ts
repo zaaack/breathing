@@ -47,6 +47,12 @@ export function useBreathingTimer() {
     if (currentState.settings.totalMinutes > 0) {
       const newTotalSeconds = currentState.totalSecondsRemaining - 0.1;
       if (newTotalSeconds <= 0) {
+        // 如果是 resonance test 模式，暂停但不 reset，让 ResonanceTest 组件处理
+        if (currentState.resonanceTest.isActive) {
+          breathingStore.setTotalSecondsRemaining(0);
+          breathingStore.setRunning(false);
+          return;
+        }
         breathingStore.reset();
         audioManager.stopBackgroundMusic();
         return;
