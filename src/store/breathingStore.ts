@@ -346,9 +346,9 @@ class BreathingStore extends LocalStore<BreathingState> {
     }
   }
 
-  getTotalSeconds = () => {
+  getTotalSeconds = (phase: BreathingPhase) => {
     const settings = this.state.settings
-    switch (this.state.phase) {
+    switch (phase) {
       case 'inhale':
         return settings.inhaleSeconds
       case 'hold':

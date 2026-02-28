@@ -246,7 +246,6 @@ export function ResonanceTest({ isOpen, onClose }: ResonanceTestProps) {
             <BreathingCircle
               phase={phase}
               secondsRemaining={secondsRemaining}
-              totalSeconds={breathingStore.getTotalSeconds()}
               size={150}
             />
 

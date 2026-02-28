@@ -54,7 +54,6 @@ function App() {
             <BreathingCircle
               phase={phase}
               secondsRemaining={secondsRemaining}
-              totalSeconds={breathingStore.getTotalSeconds()}
             />
 
           </div>

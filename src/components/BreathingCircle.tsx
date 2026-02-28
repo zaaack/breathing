@@ -1,10 +1,9 @@
 import { cn } from '@/lib/utils';
-import type { BreathingPhase } from '@/store/breathingStore';
+import { breathingStore, type BreathingPhase } from '@/store/breathingStore';
 
 interface BreathingCircleProps {
   phase: BreathingPhase;
   secondsRemaining: number;
-  totalSeconds: number;
   size?: number;
 }
 
@@ -40,7 +39,8 @@ const phaseLabels: Record<string, string> = {
   exhale: 'Exhale',
   holdAfterExhale: 'Hold',
 }
-export function BreathingCircle({ phase, secondsRemaining, totalSeconds, size = 200 }: BreathingCircleProps) {
+export function BreathingCircle({ phase, secondsRemaining, size = 200 }: BreathingCircleProps) {
+  const totalSeconds = breathingStore.getTotalSeconds(phase)
   const getScale = () => {
     if (phase === 'idle' || totalSeconds === 0) return 0.3;
     const max = 1;

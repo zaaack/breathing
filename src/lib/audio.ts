@@ -106,7 +106,7 @@ class AudioManager {
     return Math.max(0, Math.min(newVolume, 3))
   }
 
-  toneFadeTime = 0.7
+  toneFadeTime = 0.03
 
   /**
    *
