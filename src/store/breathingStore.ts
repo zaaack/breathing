@@ -106,6 +106,8 @@ export interface BreathingState {
   phase: BreathingPhase
   isRunning: boolean
   currentCycle: number
+  startTime: number
+  totalStartTime: number
   secondsRemaining: number
   totalSecondsRemaining: number
   settings: BreathingSettings
@@ -202,6 +204,8 @@ export const initialState: BreathingState = {
   isRunning: false,
   currentCycle: 0,
   secondsRemaining: 0,
+  startTime: 0,
+  totalStartTime: 0,
   totalSecondsRemaining: 0,
   settings: defaultSettings,
   resonanceTest: initialResonanceTestState,
@@ -311,6 +315,8 @@ class BreathingStore extends LocalStore<BreathingState> {
       currentCycle: 0,
       secondsRemaining: 0,
       totalSecondsRemaining: 0,
+      startTime: 0,
+      totalStartTime: 0,
     })
   }
 
@@ -324,6 +330,8 @@ class BreathingStore extends LocalStore<BreathingState> {
         phase: 'inhale',
         secondsRemaining: state.settings.inhaleSeconds,
         totalSecondsRemaining: totalSeconds,
+        startTime: Date.now(),
+        totalStartTime: Date.now(),
       }
     })
 

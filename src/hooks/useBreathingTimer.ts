@@ -39,66 +39,70 @@ export function useBreathingTimer() {
   }, [state]);
 
   const tick = useCallback(async () => {
-    const currentState = state;
+    const currentState = state
 
-    if (!currentState.isRunning || currentState.phase === 'idle') return;
+    if (!currentState.isRunning || currentState.phase === 'idle') return
 
     // Decrement total seconds remaining for countdown
     if (currentState.settings.totalMinutes > 0) {
-      const newTotalSeconds = currentState.totalSecondsRemaining - 0.1;
+      const newTotalSeconds = currentState.totalSecondsRemaining - 0.1
       if (newTotalSeconds <= 0) {
         // 如果是 resonance test 模式，暂停但不 reset，让 ResonanceTest 组件处理
         if (currentState.resonanceTest.isActive) {
-          breathingStore.setTotalSecondsRemaining(0);
-          breathingStore.setRunning(false);
-          return;
+          breathingStore.setTotalSecondsRemaining(0)
+          breathingStore.setRunning(false)
+          return
         }
-        breathingStore.reset();
-        audioManager.stopBackgroundMusic();
-        return;
+        breathingStore.reset()
+        audioManager.stopBackgroundMusic()
+        return
       }
-      breathingStore.setTotalSecondsRemaining(newTotalSeconds);
+      breathingStore.setTotalSecondsRemaining(newTotalSeconds)
     }
 
-    const newSecondsRemaining = currentState.secondsRemaining - 0.1;
+    // const newSecondsRemaining = currentState.secondsRemaining - 0.1
+    const newSecondsRemaining=breathingStore.getTotalSeconds(currentState.phase) - (Date.now()-currentState.startTime)/1000;
 
     if (newSecondsRemaining <= 0) {
-      const next = getNextPhase(currentState.phase);
+      const next = getNextPhase(currentState.phase)
 
       if (!next) {
-        breathingStore.reset();
-        audioManager.stopBackgroundMusic();
-        return;
+        breathingStore.reset()
+        audioManager.stopBackgroundMusic()
+        return
       }
 
-      if (next.phase === 'inhale' && (currentState.phase === 'exhale' || currentState.phase === 'holdAfterExhale')) {
-        breathingStore.setCurrentCycle(currentState.currentCycle + 1);
+      if (
+        next.phase === 'inhale' &&
+        (currentState.phase === 'exhale' ||
+          currentState.phase === 'holdAfterExhale')
+      ) {
+        breathingStore.setCurrentCycle(currentState.currentCycle + 1)
         if (currentState.settings.soundEnabled) {
           // await audioManager.playCycleComplete();
         }
       }
 
-      breathingStore.setPhase(next.phase);
-      breathingStore.setSecondsRemaining(next.duration);
+      breathingStore.setPhase(next.phase)
+      breathingStore.setSecondsRemaining(next.duration)
+      breathingStore.setState({
+        startTime: Date.now(),
+      })
 
       if (currentState.settings.soundEnabled) {
-        audioManager.soundType = state.settings.soundType;
+        audioManager.soundType = state.settings.soundType
         if (next.phase === 'inhale') {
-          await audioManager.playInhaleTone(next.duration);
+          await audioManager.playInhaleTone(next.duration)
         } else if (next.phase === 'hold') {
-          await audioManager.playHoldTone(
-            next.duration,
-          )
+          await audioManager.playHoldTone(next.duration)
         } else if (next.phase === 'exhale') {
-          await audioManager.playExhaleTone(
-            next.duration,
-          )
+          await audioManager.playExhaleTone(next.duration)
         } else if (next.phase === 'holdAfterExhale') {
           await audioManager.playHoldTone(next.duration)
         }
       }
     } else {
-      breathingStore.setSecondsRemaining(newSecondsRemaining);
+      breathingStore.setSecondsRemaining(newSecondsRemaining)
     }
   }, [getNextPhase, state]);
 

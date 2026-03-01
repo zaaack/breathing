@@ -87,7 +87,7 @@ export function BreathingCircle({ phase, secondsRemaining, size = 200 }: Breathi
           width: size,
           height: size,
           transform: `scale(${getScale()})`,
-          transitionDuration: `${totalSeconds}s`,
+          transitionDuration: `${totalSeconds +0.1}s`,
         }}
       >
         <div className={cn('w-full h-full bg-bg/30 ')} />
