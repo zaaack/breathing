@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>WebRTC TURN 强制中继测试</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        #logs { width: 100%; height: 300px; background: #f0f0f0; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h2>WebRTC 强制 TURN 中继测试</h2>
+    <button id="startBtn">开始测试</button>
+    <div id="logs"></div>
+
+    <script>
+        const logs = document.getElementById('logs');
+        function log(msg) {
+            logs.innerHTML += msg + '<br>';
+            logs.scrollTop = logs.scrollHeight;
+            console.log(msg);
+        }
+
+        // TURN 服务器配置
+        const turnConfig = {
+            iceServers: [{
+                urls: 'turn:49.233.190.60:3478',
+                //urls: 'turn:192.168.1.3:3478',
+                username: 'guest',
+                credential: 'guest_jdi4i8gB9wlm',
+                realm: 'test.com'
+            }],
+            // 【关键配置】：强制使用 relay 模式，不使用直连
+            iceTransportPolicy: 'relay'
+        };
+
+        document.getElementById('startBtn').addEventListener('click', startTest);
+
+        async function startTest() {
+            log("开始测试...");
+
+            // 1. 创建两个对等连接
+            const pc1 = new RTCPeerConnection(turnConfig);
+            const pc2 = new RTCPeerConnection(turnConfig);
+
+            // 2. 监听 ICE Candidate (Trickle ICE)
+            pc1.onicecandidate = e => {
+                if (e.candidate) {
+                    log(`PC1 产生 Candidate: ${e.candidate.candidate.split(' ')[7]}`);
+                    pc2.addIceCandidate(e.candidate);
+                }
+            };
+            pc2.onicecandidate = e => {
+                if (e.candidate) {
+                    log(`PC2 产生 Candidate: ${e.candidate.candidate.split(' ')[7]}`);
+                    pc1.addIceCandidate(e.candidate);
+                }
+            };
+
+            // 3. 监听 ICE 连接状态
+            pc1.oniceconnectionstatechange = () => log(`PC1 连接状态: ${pc1.iceConnectionState}`);
+
+            // 4. 设置 DataChannel (用于连通性验证)
+            const dc1 = pc1.createDataChannel("testChannel");
+            dc1.onopen = () => log("DataChannel 已打开！");
+            dc1.onmessage = e => log(`收到消息: ${e.data}`);
+
+            pc2.ondatachannel = e => {
+                const dc2 = e.channel;
+                dc2.onmessage = e => {
+                    log(`PC2 收到: ${e.data}`);
+                    dc2.send("你好！我是 PC2，我正在通过 TURN 通信。");
+                    // 在连接成功后打印
+pc1.getStats().then(stats => {
+  stats.forEach(report => {
+    if (report.type === 'candidate-pair' && report.state === 'succeeded') {
+      console.log('ICE 连接对详细信息:', report);
+      // 检查 localCandidateId 和 remoteCandidateId 指向的候选人类型
+      // 应该出现 'relay'，如果全是 'host'，则依然是直连
+    }
+  });
+});
+                };
+            };
+
+            // 5. 协商流程 (Offer/Answer)
+            try {
+                const offer = await pc1.createOffer();
+                await pc1.setLocalDescription(offer);
+                log("PC1 设置 LocalDescription (Offer)");
+
+                await pc2.setRemoteDescription(offer);
+                log("PC2 设置 RemoteDescription (Offer)");
+
+                const answer = await pc2.createAnswer();
+                await pc2.setLocalDescription(answer);
+                log("PC2 设置 LocalDescription (Answer)");
+
+                await pc1.setRemoteDescription(answer);
+                log("PC1 设置 RemoteDescription (Answer)");
+
+                // 6. 发送测试数据
+                setTimeout(() => {
+                    if (dc1.readyState === 'open') {
+                        dc1.send("Hi from PC1, testing TURN relay!");
+                    } else {
+                        log("警告: DataChannel 未能在超时前打开");
+                    }
+                }, 3000); // 等待 3 秒确保 ICE 收集完成
+
+            } catch (e) {
+                log(`错误: ${e}`);
+            }
+        }
+    </script>
+</body>
+</html>
