@@ -99,14 +99,15 @@ class AudioManager {
 
   get toneVolume() {
     const x = this.soundVolume
-
+    const max = 5
+    const e = 3
     // 公式: 3 * x^2.585
-    const newVolume = 3 * Math.pow(x, 3)
+    const newVolume = max * Math.pow(x, e)
 
-    return Math.max(0, Math.min(newVolume, 3))
+    return Math.max(0, Math.min(newVolume, max))
   }
 
-  toneFadeTime = 0.15
+  toneFadeTime = 0.2
 
   /**
    *
