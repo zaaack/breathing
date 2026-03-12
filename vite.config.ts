@@ -19,7 +19,7 @@ export default defineConfig({
         theme_color: '#6366f1',
         background_color: '#0f172a',
         display: 'standalone',
-        start_url: '/breathing/',
+        start_url: process.env.BASE_URL || '/breathing/',
         icons: [
           {
             src: 'icon.png',
@@ -34,7 +34,7 @@ export default defineConfig({
       }
     })
   ],
-  base: '/breathing/',
+  base: process.env.BASE_URL||'/breathing/',
   build: {
     outDir: './docs',
   },
