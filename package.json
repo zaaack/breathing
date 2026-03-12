@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:app": "BASE_URL=/ vite build --outDir dist && cap build android",
+    "build:app": "BASE_URL=/ vite build --outDir dist && cap run android",
+    "assets": "npx capacitor-assets generate --android  --iconBackgroundColor '#00000000' --iconBackgroundColorDark '#00000000'",
     "lint": "eslint .",
     "preview": "vite preview",
     "deploy": "pnpm build && git add -A && git commit -m 'deploy' && git push origin master"
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "@capacitor/android": "^8.2.0",
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.2.0",
     "@capacitor/core": "^8.2.0",
     "@eslint/js": "^9.39.1",
