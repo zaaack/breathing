@@ -19,3 +19,14 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+
+# 保护 Capacitor 核心类
+-keep class com.getcapacitor.** { *; }
+-keep @interface com.getcapacitor.NativePlugin
+-keep @interface com.getcapacitor.CapacitorPlugin
+-keep @interface com.getcapacitor.Permission
+
+# 保护 Android 系统的 PackageInfo 相关类
+-keep class android.content.pm.PackageInfo { *; }
+-keep class android.content.pm.PackageManager { *; }

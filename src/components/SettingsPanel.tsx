@@ -316,7 +316,7 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
             <div className="space-y-2 pl-6">
               <div className="flex justify-between text-sm">
                 <span className="text-text-secondary">
-                  Duration in minutes (0 = infinite)
+                  Duration (0 = infinite)
                 </span>
                 <span className="text-text font-medium">
                   {settings.totalMinutes} min
