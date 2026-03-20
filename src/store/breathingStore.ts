@@ -73,6 +73,24 @@ export const builtInPatterns: BreathingPattern[] = [
     holdAfterExhaleSeconds: 0,
     isBuiltIn: true,
   },
+  {
+    id: '5.5',
+    name: '5.5',
+    inhaleSeconds: 5.5,
+    holdSeconds: 0,
+    exhaleSeconds: 5.5,
+    holdAfterExhaleSeconds: 0,
+    isBuiltIn: true,
+  },
+  {
+    id: '6.6',
+    name: '6.6',
+    inhaleSeconds: 6.6,
+    holdSeconds: 0,
+    exhaleSeconds: 6.6,
+    holdAfterExhaleSeconds: 0,
+    isBuiltIn: true,
+  },
 ]
 
 export type BackgroundMusicType =
