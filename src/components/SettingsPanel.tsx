@@ -1,10 +1,30 @@
-import { X, Volume2, Music, Clock, Repeat, Plus, Trash2, FileAudio, Disc, ChevronDown, ChevronUp, Activity } from 'lucide-react';
-import { breathingStore, builtInPatterns, type BreathingSettings, type BreathingPattern, type BackgroundMusicType, type SoundType } from '@/store/breathingStore';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
-import { audioManager } from '@/lib/audio';
-import { useState, useRef } from 'react';
+import {
+  X,
+  Volume2,
+  Music,
+  Clock,
+  Repeat,
+  Plus,
+  Trash2,
+  FileAudio,
+  Disc,
+  ChevronDown,
+  ChevronUp,
+  Activity,
+  Github,
+} from "lucide-react";
+import {
+  breathingStore,
+  builtInPatterns,
+  type BreathingSettings,
+  type BreathingPattern,
+  type BackgroundMusicType,
+} from "@/store/breathingStore";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { audioManager } from "@/lib/audio";
+import { useState, useRef } from "react";
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -13,18 +33,28 @@ interface SettingsPanelProps {
 }
 
 // Background music options with labels and icons
-const backgroundMusicOptions: { type: BackgroundMusicType; label: string; icon: string }[] = [
-  { type: 'ocean', label: '🌊 Ocean Waves', icon: '🌊' },
-  { type: 'wind', label: '🌬️ Strong Wind', icon: '🌬️' },
-  { type: 'rain', label: '🌧️ Rain', icon: '🌧️' },
-  { type: 'fire', label: '🔥 Campfire', icon: '🔥' },
-  { type: 'windLight', label: '💨 Light Breeze', icon: '💨' },
-  { type: 'sea', label: '🌊 Deep Sea', icon: '🌊' },
-  { type: 'whiteNoise', label: '📻 White Noise', icon: '📻' },
+const backgroundMusicOptions: {
+  type: BackgroundMusicType;
+  label: string;
+  icon: string;
+}[] = [
+  { type: "ocean", label: "🌊 Ocean Waves", icon: "🌊" },
+  { type: "wind", label: "🌬️ Strong Wind", icon: "🌬️" },
+  { type: "rain", label: "🌧️ Rain", icon: "🌧️" },
+  { type: "fire", label: "🔥 Campfire", icon: "🔥" },
+  { type: "windLight", label: "💨 Light Breeze", icon: "💨" },
+  { type: "sea", label: "🌊 Deep Sea", icon: "🌊" },
+  { type: "whiteNoise", label: "📻 White Noise", icon: "📻" },
 ];
 
-export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: SettingsPanelProps) {
-  const settings = breathingStore.useState((state: { settings: BreathingSettings }) => state.settings);
+export function SettingsPanel({
+  isOpen,
+  onClose,
+  onOpenResonanceTest,
+}: SettingsPanelProps) {
+  const settings = breathingStore.useState(
+    (state: { settings: BreathingSettings }) => state.settings
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // UI States
@@ -32,12 +62,18 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
   const [isMusicExpanded, setIsMusicExpanded] = useState(true);
   const [showCustomPatternForm, setShowCustomPatternForm] = useState(false);
 
-  const [customPatternName, setCustomPatternName] = useState('');
+  const [customPatternName, setCustomPatternName] = useState("");
   const [customPatternValues, setCustomPatternValues] = useState({
-    inhale: 4, hold: 0, exhale: 4, holdAfterExhale: 0
+    inhale: 4,
+    hold: 0,
+    exhale: 4,
+    holdAfterExhale: 0,
   });
 
-  const handleSettingChange = (key: keyof BreathingSettings, value: number | boolean | string) => {
+  const handleSettingChange = (
+    key: keyof BreathingSettings,
+    value: number | boolean | string
+  ) => {
     breathingStore.updateSettings({ [key]: value });
   };
 
@@ -59,8 +95,13 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
     };
 
     breathingStore.addCustomPattern(newPattern);
-    setCustomPatternName('');
-    setCustomPatternValues({ inhale: 4, hold: 0, exhale: 4, holdAfterExhale: 0 });
+    setCustomPatternName("");
+    setCustomPatternValues({
+      inhale: 4,
+      hold: 0,
+      exhale: 4,
+      holdAfterExhale: 0,
+    });
     setShowCustomPatternForm(false);
   };
 
@@ -73,12 +114,14 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
     if (file) {
       const url = URL.createObjectURL(file);
       breathingStore.setCustomMusicUrl(url);
-      breathingStore.updateSettings({ backgroundMusicType: 'custom' });
+      breathingStore.updateSettings({ backgroundMusicType: "custom" });
     }
   };
 
   const allPatterns = [...builtInPatterns, ...settings.customPatterns];
-  const currentPattern = allPatterns.find(p => p.id === settings.currentPatternId);
+  const currentPattern = allPatterns.find(
+    (p) => p.id === settings.currentPatternId
+  );
 
   if (!isOpen) return null;
 
@@ -142,16 +185,27 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
                       onClick={() => handlePatternSelect(pattern)}
                       className={`px-3 py-2 rounded-lg text-sm transition-all text-left ${
                         settings.currentPatternId === pattern.id
-                          ? 'bg-primary/20 text-primary border border-primary/50'
-                          : 'bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent'
+                          ? "bg-primary/20 text-primary border border-primary/50"
+                          : "bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent"
                       }`}
                     >
                       <div className="font-medium truncate">{pattern.name}</div>
                       <div className="text-xs opacity-70">
-                        {pattern.inhaleSeconds % 1 === 0 ? pattern.inhaleSeconds : pattern.inhaleSeconds.toFixed(1)}-
-                        {pattern.holdSeconds % 1 === 0 ? pattern.holdSeconds : pattern.holdSeconds.toFixed(1)}-
-                        {pattern.exhaleSeconds % 1 === 0 ? pattern.exhaleSeconds : pattern.exhaleSeconds.toFixed(1)}-
-                        {pattern.holdAfterExhaleSeconds % 1 === 0 ? pattern.holdAfterExhaleSeconds : pattern.holdAfterExhaleSeconds.toFixed(1)}
+                        {pattern.inhaleSeconds % 1 === 0
+                          ? pattern.inhaleSeconds
+                          : pattern.inhaleSeconds.toFixed(1)}
+                        -
+                        {pattern.holdSeconds % 1 === 0
+                          ? pattern.holdSeconds
+                          : pattern.holdSeconds.toFixed(1)}
+                        -
+                        {pattern.exhaleSeconds % 1 === 0
+                          ? pattern.exhaleSeconds
+                          : pattern.exhaleSeconds.toFixed(1)}
+                        -
+                        {pattern.holdAfterExhaleSeconds % 1 === 0
+                          ? pattern.holdAfterExhaleSeconds
+                          : pattern.holdAfterExhaleSeconds.toFixed(1)}
                       </div>
                     </button>
                   ))}
@@ -177,15 +231,15 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
                       className="w-full px-3 py-2 bg-white/10 rounded-lg text-text text-sm border border-white/10 focus:outline-none focus:border-primary/50"
                     />
                     <div className="grid grid-cols-2 gap-2 text-xs">
-                      {['inhale', 'hold', 'exhale', 'holdAfterExhale'].map(
+                      {["inhale", "hold", "exhale", "holdAfterExhale"].map(
                         (key) => (
                           <div key={key} className="space-y-1">
                             <label className="text-text-secondary capitalize">
-                              {key.replace('holdAfterExhale', 'Hold After')}
+                              {key.replace("holdAfterExhale", "Hold After")}
                             </label>
                             <input
                               type="number"
-                              min={key.includes('hold') ? '0' : '1'}
+                              min={key.includes("hold") ? "0" : "1"}
                               step="0.1"
                               value={
                                 customPatternValues[
@@ -261,24 +315,24 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
               {(
                 [
                   {
-                    label: 'Inhale',
-                    key: 'inhaleSeconds',
-                    color: 'text-primary',
+                    label: "Inhale",
+                    key: "inhaleSeconds",
+                    color: "text-primary",
                   },
                   {
-                    label: 'Hold',
-                    key: 'holdSeconds',
-                    color: 'text-secondary',
+                    label: "Hold",
+                    key: "holdSeconds",
+                    color: "text-secondary",
                   },
                   {
-                    label: 'Exhale',
-                    key: 'exhaleSeconds',
-                    color: 'text-accent',
+                    label: "Exhale",
+                    key: "exhaleSeconds",
+                    color: "text-accent",
                   },
                   {
-                    label: 'Hold After',
-                    key: 'holdAfterExhaleSeconds',
-                    color: 'text-purple-400',
+                    label: "Hold After",
+                    key: "holdAfterExhaleSeconds",
+                    color: "text-purple-400",
                   },
                 ] as const
               ).map((item) => (
@@ -286,7 +340,10 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
                   <div className="flex justify-between text-sm">
                     <span className="text-text-secondary">{item.label}</span>
                     <span className={`${item.color} font-medium`}>
-                      {settings[item.key] % 1 === 0 ? settings[item.key] : (settings[item.key] as number).toFixed(1)}s
+                      {settings[item.key] % 1 === 0
+                        ? settings[item.key]
+                        : (settings[item.key] as number).toFixed(1)}
+                      s
                     </span>
                   </div>
                   <Slider
@@ -299,7 +356,7 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
                         val
                       )
                     }
-                    min={item.label.includes('Hold') ? 0 : 1}
+                    min={item.label.includes("Hold") ? 0 : 1}
                     max={20}
                     step={0.5}
                   />
@@ -325,7 +382,7 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
               <Slider
                 value={[settings.totalMinutes]}
                 onValueChange={([val]) =>
-                  handleSettingChange('totalMinutes', val)
+                  handleSettingChange("totalMinutes", val)
                 }
                 min={0}
                 max={60}
@@ -343,7 +400,7 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
               <Switch
                 checked={settings.soundEnabled}
                 onCheckedChange={(checked) =>
-                  handleSettingChange('soundEnabled', checked)
+                  handleSettingChange("soundEnabled", checked)
                 }
               />
             </div>
@@ -353,21 +410,21 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
               <>
                 <div className="flex gap-2 pl-6 animate-in fade-in duration-200">
                   <button
-                    onClick={() => handleSettingChange('soundType', 'breath')}
+                    onClick={() => handleSettingChange("soundType", "breath")}
                     className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all ${
-                      settings.soundType === 'breath'
-                        ? 'bg-primary/20 text-primary border border-primary/50'
-                        : 'bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent'
+                      settings.soundType === "breath"
+                        ? "bg-primary/20 text-primary border border-primary/50"
+                        : "bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent"
                     }`}
                   >
                     🌬️ Breath
                   </button>
                   <button
-                    onClick={() => handleSettingChange('soundType', 'beep')}
+                    onClick={() => handleSettingChange("soundType", "beep")}
                     className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all ${
-                      settings.soundType === 'beep'
-                        ? 'bg-primary/20 text-primary border border-primary/50'
-                        : 'bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent'
+                      settings.soundType === "beep"
+                        ? "bg-primary/20 text-primary border border-primary/50"
+                        : "bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent"
                     }`}
                   >
                     🔔 Beep
@@ -383,7 +440,7 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
                   <Slider
                     value={[settings.soundVolume]}
                     onValueChange={([val]) =>
-                      handleSettingChange('soundVolume', val)
+                      handleSettingChange("soundVolume", val)
                     }
                     min={0}
                     max={100}
@@ -402,19 +459,19 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
               <Switch
                 checked={settings.backgroundMusicEnabled}
                 onCheckedChange={(checked) => {
-                  handleSettingChange('backgroundMusicEnabled', checked)
+                  handleSettingChange("backgroundMusicEnabled", checked);
                   if (checked) {
                     const customUrl =
-                      settings.backgroundMusicType === 'custom'
+                      settings.backgroundMusicType === "custom"
                         ? settings.customMusicUrl
-                        : null
+                        : null;
                     audioManager.startBackgroundMusic(
                       settings.backgroundMusicVolume,
                       settings.backgroundMusicType,
                       customUrl
-                    )
+                    );
                   } else {
-                    audioManager.stopBackgroundMusic()
+                    audioManager.stopBackgroundMusic();
                   }
                 }}
               />
@@ -444,19 +501,19 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
                           key={option.type}
                           onClick={() =>
                             handleSettingChange(
-                              'backgroundMusicType',
+                              "backgroundMusicType",
                               option.type
                             )
                           }
                           className={`px-3 py-2 rounded-lg text-sm transition-all text-left flex items-center gap-2 ${
                             settings.backgroundMusicType === option.type
-                              ? 'bg-primary/20 text-primary border border-primary/50'
-                              : 'bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent'
+                              ? "bg-primary/20 text-primary border border-primary/50"
+                              : "bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent"
                           }`}
                         >
                           <span>{option.icon}</span>
                           <span className="truncate">
-                            {option.label.replace(/^[^\s]+ /, '')}
+                            {option.label.replace(/^[^\s]+ /, "")}
                           </span>
                         </button>
                       ))}
@@ -466,19 +523,19 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
                     <div className="space-y-2 pt-2 border-t border-white/10">
                       <button
                         onClick={() =>
-                          handleSettingChange('backgroundMusicType', 'custom')
+                          handleSettingChange("backgroundMusicType", "custom")
                         }
                         className={`w-full px-3 py-2 rounded-lg text-sm transition-all text-left flex items-center gap-2 ${
-                          settings.backgroundMusicType === 'custom'
-                            ? 'bg-primary/20 text-primary border border-primary/50'
-                            : 'bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent'
+                          settings.backgroundMusicType === "custom"
+                            ? "bg-primary/20 text-primary border border-primary/50"
+                            : "bg-white/5 text-text-secondary hover:bg-white/10 border border-transparent"
                         }`}
                       >
                         <FileAudio className="w-4 h-4" />
                         <span>Custom MP3 File</span>
                       </button>
 
-                      {settings.backgroundMusicType === 'custom' && (
+                      {settings.backgroundMusicType === "custom" && (
                         <div className="pl-2">
                           <input
                             ref={fileInputRef}
@@ -496,8 +553,8 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
                             <FileAudio className="w-4 h-4" />
                             <span>
                               {settings.customMusicUrl
-                                ? 'Change MP3'
-                                : 'Select MP3'}
+                                ? "Change MP3"
+                                : "Select MP3"}
                             </span>
                           </Button>
                         </div>
@@ -517,7 +574,7 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
                       <Slider
                         value={[settings.backgroundMusicVolume]}
                         onValueChange={([val]) =>
-                          handleSettingChange('backgroundMusicVolume', val)
+                          handleSettingChange("backgroundMusicVolume", val)
                         }
                         min={0}
                         max={100}
@@ -529,8 +586,21 @@ export function SettingsPanel({ isOpen, onClose, onOpenResonanceTest }: Settings
               </div>
             )}
           </div>
+
+          {/* GitHub Repository Link */}
+          <div className="pt-4 border-t border-white/10">
+            <a
+              href="https://github.com/zaaack/breathing"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 py-3 text-text-secondary hover:text-primary transition-colors"
+            >
+              <Github className="w-4 h-4" />
+              <span className="text-sm">GitHub Repository</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -149,7 +149,7 @@ export function ResonanceTest({ isOpen, onClose }: ResonanceTestProps) {
         onClick={handleClose}
       />
 
-      <div className="relative w-full max-w-lg bg-surface border border-white/10 rounded-2xl p-6 mx-4 animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-lg max-h-[calc(100vh-2rem)] overflow-y-auto bg-surface border border-white/10 rounded-2xl p-6 mx-4 animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-text">
