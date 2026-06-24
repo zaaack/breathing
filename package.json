@@ -10,6 +10,7 @@
         "assets": "npx capacitor-assets generate --android  --iconBackgroundColor '#00000000' --iconBackgroundColorDark '#00000000'",
         "lint": "eslint .",
         "preview": "vite preview",
+        "android:build": "BASE_URL=/ pnpm build && cap sync android && cd android && ./gradlew assembleDebug",
         "deploy": "pnpm build && git add -A && git commit -m 'deploy' && git push origin master"
     },
     "dependencies": {
