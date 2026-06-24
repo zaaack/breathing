@@ -6,11 +6,11 @@
     "scripts": {
         "dev": "vite",
         "build": "foy build",
-        "build:app": "BASE_URL=/ vite build --outDir dist && cap sync android && cd android && ./gradlew assembleDebug",
+        "build:app": "BASE_URL=/ vite build && cap sync android && cd android && ./gradlew assembleDebug",
         "assets": "npx capacitor-assets generate --android  --iconBackgroundColor '#00000000' --iconBackgroundColorDark '#00000000'",
         "lint": "eslint .",
         "preview": "vite preview",
-        "android:build": "BASE_URL=/ vite build --outDir dist && cap sync android && cd android && ./gradlew assembleDebug",
+        "android:build": "BASE_URL=/ vite build --outDir dist &&  cap sync android && capacitor-assets generate && cd android && ./gradlew assembleDebug",
         "deploy": "pnpm build && git add -A && git commit -m 'deploy' && git push origin master"
     },
     "dependencies": {
